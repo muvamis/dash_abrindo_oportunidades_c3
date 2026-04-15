@@ -488,7 +488,7 @@ ui_Qualidade <- tabPanel("🔍 Avaliação_PI",
 # )
 
 
-
+log_path <- "log_acoes.csv"
 # ==============================
 # 8. UI: Admin
 # ==============================
@@ -1253,7 +1253,7 @@ server <- function(input, output, session) {
       list(
         x = totais_sessao$Sessao[i],
         y = totais_sessao$total[i] + 10,  # um pouco acima da barra
-        text = paste("Total:", totais_sessao$total[i]),
+        text = paste("", totais_sessao$total[i]),
         showarrow = FALSE,
         font = list(size = 12, color = "black")
       )
@@ -2591,32 +2591,74 @@ server <- function(input, output, session) {
   
   # Interface da área administrativa
   output$admin_ui <- renderUI({
-    fluidRow(
-      column(4,
-             p("Clique no botão abaixo para actualizar os dados do sistema."),
-             actionButton("botao_atualizar", 
-                          label = HTML('<i class="fa fa-refresh"></i> Actualizar Dados'),
-                          class = "btn btn-primary")  # Botão azul com ícone
+    tagList(
+      
+      # CSS botão roxo
+      tags$head(
+        tags$style(HTML("
+          .btn-purple {
+            background-color: #6f42c1;
+            color: white;
+            border: none;
+          }
+          .btn-purple:hover {
+            background-color: #5a32a3;
+            color: white;
+          }
+        "))
       ),
-      column(8,
-             verbatimTextOutput("status_atualizacao"),
-             
-             tags$div(
-               style = "margin-top: 10px;",
-               downloadButton("baixar_log", label = NULL, class = "btn btn-success"),
-               tags$script(HTML("
-                 $(document).ready(function() {
-                   $('#baixar_log').html('<i class=\"fa fa-download\"></i> Baixar Log de Ações');
-                 });
-               "))
-             )
-      )
+      
+      # Campo escondido (email)
+      tags$div(
+        style = "display:none;",
+        textInput("user_email", NULL, value = "")
+      ),
+      
+      # JS para capturar email
+      tags$script(HTML("
+        if (!localStorage.getItem('email')) {
+          localStorage.setItem('email', 'admin@empresa.com');
+        }
+        Shiny.setInputValue('user_email', localStorage.getItem('email'));
+      ")),
+      
+      fluidRow(
+        column(4,
+               p("Clique no botão abaixo para actualizar os dados do sistema."),
+               actionButton(
+                 "botao_atualizar",
+                 label = HTML('<i class=\"fa fa-refresh\"></i> Actualizar Dados'),
+                 class = "btn btn-purple"
+               )
+        ),
+        
+        column(8,
+               verbatimTextOutput("status_atualizacao"),
+               
+               tags$div(
+                 style = "margin-top: 10px;",
+                 downloadButton("baixar_log", label = NULL, class = "btn btn-success"),
+                 tags$script(HTML("
+                   $(document).ready(function() {
+                     $('#baixar_log').html('<i class=\"fa fa-download\"></i> Baixar Log de Ações');
+                   });
+                 "))
+               )
+        )
+      ),
+      
+      hr(),
+      
+      h4("📊 Histórico de Ações"),
+      DTOutput("tabela_log")
     )
   })
+  
   
   # Função para atualizar dados
   atualiza_dados <- function() {
     tryCatch({
+      
       client_id <- Sys.getenv("CLIENT_ID")
       client_secret <- Sys.getenv("CLIENT_SECRET")
       refresh_token <- Sys.getenv("REFRESH_TOKEN")
@@ -2626,12 +2668,13 @@ server <- function(input, output, session) {
         client_secret,
         refresh_token
       )$access_token
-     
+      
       Presencas_Colectivas <- RZohoCreator::get_records(
         "associacaomuva",
         "monitoria-edm",
         "lista_presencaKM",
-        access_token)
+        access_token
+      )
       
       writexl::write_xlsx(Presencas_Colectivas, "Presencas_Colectivas.xlsx")
       
@@ -2639,91 +2682,89 @@ server <- function(input, output, session) {
         "associacaomuva",
         "monitoria-edm",
         "Qualidade_Sessoes_Abrindo_Report",
-        access_token)
-
-      # Presenca <- data.frame(Presenca) %>%
-      #   select(-c(6, 11, 12))
-
-      writexl::write_xlsx(Qualidade_Sessoes, "Qualidade_Sessoes.xlsx")
-
-      # Geral_Poupanca <- RZohoCreator::get_records(
-      #   "associacaomuva",
-      #   "monitoria-edm",
-      #   "POUPAN_A_Report",
-      #   access_token)
-      # 
-      # writexl::write_xlsx(Geral_Poupanca, "Geral_Poupanca.xlsx")
-      # Presenca_BPA <- RZohoCreator::get_records(
-      #   "associacaomuva",
-      #   "monitoria-edm",
-      #   "Boas_Pr_ticas_Agr_colas_Report",
-      #   access_token)
-      # 
-      # # Presenca <- data.frame(Presenca) %>%
-      # #   select(-c(6, 11, 12))
-      # 
-      # writexl::write_xlsx(Presenca_BPA, "Presencas_BPA.xlsx")
-      # 
-      # Geral_Poupanca <- RZohoCreator::get_records(
-      #   "associacaomuva",
-      #   "monitoria-edm",
-      #   "POUPAN_A_Report",
-      #   access_token)
-      # 
-      # writexl::write_xlsx(Geral_Poupanca, "Geral_Poupanca.xlsx")
+        access_token
+      )
       
-      return(list(
-        Presencas_Colectivas = Presencas_Colectivas,
-        Qualidade_Sessoes = Qualidade_Sessoes
-        # Presenca_BPA = Presenca_BPA,
-        # Geral_Poupanca = Geral_Poupanca
-      ))
+      writexl::write_xlsx(Qualidade_Sessoes, "Qualidade_Sessoes.xlsx")
+      
+      return(TRUE)
       
     }, error = function(e) {
       message("Erro ao actualizar dados: ", e$message)
-      return(NULL)
+      return(FALSE)
     })
   }
   
-  # Caminho para o log
-  log_path <- "log_acoes.csv"
   
-  # Atualização de dados com log
-  dados_atualizados <- eventReactive(input$botao_atualizar, {
-    dados <- atualiza_dados()
+  # =========================
+  # 🔁 EVENTO DE ATUALIZAÇÃO + LOG
+  # =========================
+  observeEvent(input$botao_atualizar, {
+    
+    sucesso <- atualiza_dados()
+    
+    usuario <- ifelse(isTruthy(input$user_email), input$user_email, "desconhecido")
     
     log_entry <- data.frame(
-      usuario = "admin",
-      acao = "Atualizou os dados",
+      usuario = usuario,
+      acao = ifelse(sucesso, "Atualizou os dados", "Erro ao atualizar"),
       hora = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
       stringsAsFactors = FALSE
     )
     
     if (!file.exists(log_path)) {
-      write.table(log_entry, log_path, sep = ",", row.names = FALSE, col.names = TRUE, append = FALSE)
+      write.table(log_entry, log_path, sep = ",", row.names = FALSE, col.names = TRUE)
     } else {
       write.table(log_entry, log_path, sep = ",", row.names = FALSE, col.names = FALSE, append = TRUE)
     }
     
-    return(!is.null(dados))
   })
   
   # Mensagem de status
+  # =========================
+  # 📢 STATUS
+  # =========================
   output$status_atualizacao <- renderText({
     if (input$botao_atualizar > 0) {
-      sucesso <- dados_atualizados()
+      
+      sucesso <- atualiza_dados()
+      
       if (sucesso) {
-        paste0("\u2705 Dados actualizados com sucesso em ", format(Sys.time(), "%d/%m/%Y %H:%M:%S"),
-               ". Por favor, actualize (refresh) a página no navegador para ver as mudanças.")
+        paste0("✅ Dados actualizados com sucesso em ",
+               format(Sys.time(), "%d/%m/%Y %H:%M:%S"))
       } else {
-        "\u274c Erro ao actualizar os dados."
+        "❌ Erro ao actualizar os dados."
       }
+      
     } else {
-      "\u23f3 Aguardando actualização..."
+      "⏳ Aguardando actualização..."
     }
   })
   
-  # Download do log de ações
+  # =========================
+  # 📊 HISTÓRICO
+  # =========================
+  log_data <- reactive({
+    if (file.exists(log_path)) {
+      read.csv(log_path, stringsAsFactors = FALSE)
+    } else {
+      data.frame(usuario = character(), acao = character(), hora = character())
+    }
+  })
+  
+  output$tabela_log <- renderDT({
+    datatable(
+      log_data(),
+      options = list(
+        pageLength = 5,
+        order = list(list(2, 'desc'))
+      )
+    )
+  })
+  
+  # =========================
+  # 📥 DOWNLOAD
+  # =========================
   output$baixar_log <- downloadHandler(
     filename = function() paste0("log_acoes_", Sys.Date(), ".csv"),
     content = function(file) {
