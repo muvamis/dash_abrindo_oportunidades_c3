@@ -2629,7 +2629,7 @@ server <- function(input, output, session) {
         
         column(
           4,
-          p("Clique no botão abaixo para atualizar os dados do sistema."),
+          p("Clique no botão abaixo para actualizar os dados do sistema."),
           actionButton(
             "botao_atualizar",
             label = HTML('<i class="fa fa-refresh"></i> Atualizar Dados'),
