@@ -177,6 +177,10 @@ ui_presencas <- tabPanel("📋 Presenças_PI",
                            tabPanel("Acompanhamento",
                                     sidebarLayout(
                                       sidebarPanel(
+                                        selectInput("distritoInput", "Selecione o Distrito:",
+                                                    choices = c("TODOS", unique(Presencas_PI$Distrito)),
+                                                    selected = "TODOS"),
+                                        
                                         selectInput("comunidadeAcompanhamento", "Selecione a Comunidade:",
                                                     choices = c("TODAS", unique(Presencas_PI$Comunidade)),
                                                     selected = "TODAS"),
@@ -189,6 +193,8 @@ ui_presencas <- tabPanel("📋 Presenças_PI",
                                         tags$h4("A tabela a seguir ilustra a participação nas 12 sessões De PI: Os pontos roxos indicam a presença dos participantes em cada sessão, os pontos vermelhos indicam a ausência e cinzas 
                                                 indicam dados faltantes/Não Preenchidos."),
                                         uiOutput("pontosPresenca"),
+                                        br(),
+                                        downloadButton("downloadPresencas", "📥 Baixar Presenças"),
                                         dataTableOutput("tabelaPresencas")
                                       )
                                     )
@@ -1416,22 +1422,46 @@ server <- function(input, output, session) {
   ################################ ACOMPANHAMENTO ##################################
   
   # Atualiza opções do facilitador
-  observeEvent(input$comunidadeAcompanhamento, {
-    if (input$comunidadeAcompanhamento == "TODAS") {
-      facilitadores_filtrados <- unique(Presencas_PI$Facilitador)
+  # 🔁 Atualiza Comunidade com base no Distrito
+  observeEvent(input$distritoInput, {
+    if (input$distritoInput == "TODOS") {
+      comunidades_filtradas <- unique(Presencas_PI$Comunidade)
     } else {
-      facilitadores_filtrados <- unique(
-        Presencas_PI$Facilitador[Presencas_PI$Comunidade == input$comunidadeAcompanhamento]
+      comunidades_filtradas <- unique(
+        Presencas_PI$Comunidade[Presencas_PI$Distrito == input$distritoInput]
       )
     }
     
-    updateSelectInput(session, "facilitadorInput",
-                      choices = c("TODOS", facilitadores_filtrados),
-                      selected = "TODOS")
+    updateSelectInput(session, "comunidadeAcompanhamento",
+                      choices = c("TODAS", comunidades_filtradas),
+                      selected = "TODAS")
   })
   
   
-  # Função para formatar os pontos de presença
+  # 🔁 Atualiza Facilitador com base no Distrito + Comunidade
+  observeEvent(
+    list(input$distritoInput, input$comunidadeAcompanhamento), {
+      
+      df <- Presencas_PI
+      
+      if (input$distritoInput != "TODOS") {
+        df <- df[df$Distrito == input$distritoInput, ]
+      }
+      
+      if (input$comunidadeAcompanhamento != "TODAS") {
+        df <- df[df$Comunidade == input$comunidadeAcompanhamento, ]
+      }
+      
+      facilitadores_filtrados <- unique(df$Facilitador)
+      
+      updateSelectInput(session, "facilitadorInput",
+                        choices = c("TODOS", facilitadores_filtrados),
+                        selected = "TODOS")
+    }
+  )
+  
+  
+  # 🎨 Função para pontos visuais
   formatar_pontos <- function(x) {
     sapply(x, function(valor) {
       if (is.na(valor) || valor == "" || is.null(valor)) {
@@ -1441,35 +1471,42 @@ server <- function(input, output, session) {
       } else if (valor == "Ausente") {
         '<span style="color: red; font-size: 40px;">&#9679;</span>'
       } else {
-        # Caso padrão para valores inesperados: cinza
         '<span style="color: grey; font-size: 40px;">&#9679;</span>'
       }
     })
   }
   
   
-  # Dados filtrados reativos
+  # 📊 Dados filtrados
   dados_filtered <- reactive({
     df <- Presencas_PI
     
+    # 🔹 Distrito
+    if (input$distritoInput != "TODOS") {
+      df <- df[df$Distrito == input$distritoInput, ]
+    }
+    
+    # 🔹 Comunidade
     if (input$comunidadeAcompanhamento != "TODAS") {
       df <- df[df$Comunidade == input$comunidadeAcompanhamento, ]
     }
     
+    # 🔹 Facilitador
     if (input$facilitadorInput != "TODOS") {
       df <- df[df$Facilitador == input$facilitadorInput, ]
     }
-    # 🔥 Detectar colunas de sessões
+    
+    # 🔥 Sessões
     col_sessoes <- grep("^Sessao", names(df), value = TRUE)
     
-    # 🔥 Remover quem nunca esteve presente
+    # 🔥 Remover participantes sem presença
     df <- df[rowSums(df[col_sessoes] == "Presente", na.rm = TRUE) > 0, ]
     
     df
   })
   
   
-  # Legenda visual
+  # 📌 Legenda
   output$pontosPresenca <- renderUI({
     tagList(
       HTML(paste0(
@@ -1480,30 +1517,50 @@ server <- function(input, output, session) {
     )
   })
   
-  # Renderização da tabela com os pontos formatados
+  
+  # 📋 Tabela
   output$tabelaPresencas <- renderDataTable({
     df <- dados_filtered()
     
-    # Detectar colunas de sessões (ex: Sessao_1, Sessao_2, ...)
     col_sessoes <- grep("^Sessao", names(df), value = TRUE)
     
-    # Converter os dados para texto e aplicar a formatação visual dos pontos
     df[col_sessoes] <- lapply(df[col_sessoes], as.character)
     df[col_sessoes] <- lapply(df[col_sessoes], formatar_pontos)
     
-    # Tabela com pontos visuais
     datatable(
-      df[, c("Comunidade", "Nome_Participante", col_sessoes)],
+      df[, c("Distrito", "Comunidade", "Nome_Participante", col_sessoes)],
       escape = FALSE,
       rownames = FALSE,
       options = list(
         pageLength = 10,
-        dom = 'lfrtip',  # ✅ mostra "Show entries", filtro e paginação
+        dom = 'lfrtip',
         columnDefs = list(list(className = 'dt-center', targets = "_all"))
       )
     )
   })
   
+  output$downloadPresencas <- downloadHandler(
+    
+    filename = function() {
+      paste0("Presencas_PI_", Sys.Date(), ".xlsx")
+    },
+    
+    content = function(file) {
+      
+      library(writexl)
+      
+      df <- dados_filtered()
+      
+      # 🔹 Identificar colunas de sessões
+      col_sessoes <- grep("^Sessao", names(df), value = TRUE)
+      
+      # 🔹 Selecionar colunas para exportação
+      df_export <- df[, c("Distrito", "Comunidade", "Nome_Participante", col_sessoes)]
+      
+      # 🔹 Exportar para Excel
+      write_xlsx(df_export, path = file)
+    }
+  )
   ################# MONITORIA BPA #########################
   # 
   # dados_filtrados_boaspraticas <- reactive({
