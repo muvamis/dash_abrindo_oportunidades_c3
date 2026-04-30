@@ -56,7 +56,15 @@ dotenv::load_dot_env()
 Selecionados_Motivacional_Monapo_2025 <- read_excel("Selecionados_Motivacional_Monapo_2026.xlsx")
 Selecionados_Motivacional_Ribaue_2025 <- read_excel("Selecionados_Motivacional_Ribaue_2026.xlsx")
 
-Perfil_Abrindo_C2 <- rbind(Selecionados_Motivacional_Monapo_2025, Selecionados_Motivacional_Ribaue_2025) 
+Perfil_Abrindo_C2 <- rbind(Selecionados_Motivacional_Monapo_2025, Selecionados_Motivacional_Ribaue_2025)
+
+Perfil_Abrindo_C2 <- Perfil_Abrindo_C2 %>%
+  select(-c(
+    1, 2,
+    46,47,
+    48,
+    49
+  ))
 
 Presencas_Colectivas <- read_excel("Presencas_Colectivas.xlsx")
 
@@ -121,8 +129,8 @@ corrigir_presenca <- function(x) {
 }
 
 # duplicados <- Presencas_Colectivas[duplicated(Presencas_Colectivas), ]
-# 
-# duplicados_Nome <- Presencas_Colectivas[duplicated(Presencas_Colectivas$Nome_Participante), ]
+# # 
+#  duplicados_Nome <- Presencas_Colectivas[duplicated(Presencas_Colectivas$Nome_Participante), ]
 
 
 # Identificar colunas de sessão após pivot_wider
@@ -155,8 +163,104 @@ Presencas_Colectivas <- Presencas_Colectivas %>%
     select(., all_of(c(colunas_fixas, colunas_sessoes, colunas_restantes)))
   }
 
+############### PERFIL COM PRESENCAS MONAPO
+
+Presencas_Monapo <- Presencas_Colectivas %>%
+  filter(Distrito == "Monapo")
+
+Presencas_Monapo_Perfil <- Presencas_Monapo %>%
+  # inner_join(
+  left_join(
+    Selecionados_Motivacional_Monapo_2025,
+    by = c("Nome_Participante", "Comunidade")
+  )
+
+Presencas_Ribaue <- Presencas_Colectivas %>%
+  filter(Distrito == "Ribaue")
+
+Presencas_Ribaue_Perfil <- Presencas_Ribaue %>%
+  # inner_join(
+  left_join(  
+  Selecionados_Motivacional_Ribaue_2025,
+    by = c("Nome_Participante", "Comunidade")
+  )
+
+Ribaue_Perfil_Nao_Enco <- Presencas_Ribaue %>%
+  anti_join(
+    Selecionados_Motivacional_Ribaue_2025,
+    by = c("Nome_Participante", "Comunidade")
+  )
+
+
+Ribaue_duplicados <- Presencas_Ribaue_Perfil[duplicated(Presencas_Ribaue_Perfil), ]
+#
+ duplicados_Nome <- Presencas_Ribaue_Perfil[duplicated(Presencas_Ribaue_Perfil$Nome_Participante), ]
+
+ idx <- which(Presencas_Ribaue_Perfil$Nome_Participante == "BENILDA ALBERTO")[1]
+ Presencas_Ribaue_Perfil <- Presencas_Ribaue_Perfil[-idx, ]
+ 
+ 
+Perfil_Abrindo_C2_2026 <- rbind(Presencas_Monapo_Perfil,Presencas_Ribaue_Perfil)
+
+Perfil_Abrindo_C2_2026 <- Perfil_Abrindo_C2_2026 %>%
+  select(-c(
+  16:22,
+  18,19,
+  34
+  ))
+
+Perfil_Abrindo_C2_2026 <- Perfil_Abrindo_C2_2026 %>% rename(
+  Distrito = Distrito.x,
+  Sexo =Sexo.x
+)
+
+table(Perfil_Abrindo_C2_2026$Distrito,Perfil_Abrindo_C2_2026$Sexo)
+
+
+# duplicados_Nome <- Presencas_Monapo_Perfil[duplicated(Presencas_Monapo_Perfil$Nome_Participante), ]
+
+# Presencas_Monapo_Perfil <- Presencas_Monapo_Perfil %>%
+#   distinct(Nome_Participante, .keep_all = TRUE)
+
+
+
+
+# participantes_Geral <- read_excel("participantes_Geral.xlsx")
+# 
+# Perfil_Ribaue <- participantes_Geral %>%
+#   filter(Distrito == "Ribaue")
+# 
+# Presencas_Ribaue <- Presencas_Colectivas %>%
+#   filter(Distrito == "Ribaue")
+# 
+# Presencas_Ribaue_Perfil <- Presencas_Ribaue %>%
+#   inner_join(Perfil_Ribaue, by = "Nome_Participante")
+# 
+# Ribaue_Perfil_Nao_Enco <- Presencas_Ribaue %>%
+#   anti_join(Perfil_Ribaue, by = "Nome_Participante")
+# 
+
 
 Presencas_PI <- Presencas_Colectivas
+
+
+# merge_final <- Presencas_PI %>%
+#   inner_join(Perfil_Abrindo_C2, by = "Nome_Participante")
+# 
+# duplicados_Nome <- Presencas_Colectivas[duplicated(Presencas_Colectivas$Nome_Participante), ]
+# 
+# base_match <- Presencas_PI %>%
+#   dplyr::inner_join(
+#     Perfil_Abrindo_C2,
+#     by = "Nome_Participante"
+#   )
+# 
+# nao_encontrados <- Presencas_PI %>%
+#   dplyr::anti_join(
+#     Perfil_Abrindo_C2,
+#     by = "Nome_Participante"
+#   )
+
 
 # # Adicionar a coluna 'Desistente' com base em 4 ou mais ausências
 # Presencas_PI <- Presencas_PI %>%

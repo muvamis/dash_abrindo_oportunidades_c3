@@ -18,46 +18,49 @@ ui_overview <- tabPanel("📈 Overview",
                             selectInput(
                               "distritoInputGeral", 
                               "Escolha o Distrito:", 
-                              choices = c("Todos", unique(Presencas_PI$Distrito)), 
+                              choices = c("Todos", unique(Perfil_Abrindo_C2_2026$Distrito)), 
                               selected = "Todos"
                             ),
                             selectInput(
                               "comunidadeInputGeral", 
                               "Escolha a Comunidade:", 
-                              choices = c("Todos", unique(Presencas_PI$Comunidade)), 
+                              choices = c("Todos", unique(Perfil_Abrindo_C2_2026$Comunidade)), 
                               selected = "Todos"
                             )
                           ),
                           mainPanel(
+                            uiOutput("texto_resumo"),
+                            div(
+                              class = "value-box-container",
+                              
+                              div(class = "value-box blue",
+                                  textOutput("total_part"),
+                                  div("Total de Participantes")),
+                              
+                              div(class = "value-box green",
+                                  textOutput("total_mul"),
+                                  div("Mulheres")),
+                              
+                              div(class = "value-box orange",
+                                  textOutput("total_hom"),
+                                  div("Homens"))
+                            ),
+                            
+                            br(),
                             fluidRow(
                               column(6,
-                                     div(
-                                       style = "background-color:#f5f3f4; padding:12px; border-radius:6px; margin-bottom:20px;",
-                                       tags$p(
-                                         style = "margin: 0; text-align: justify;",
-                                         tags$b("Participantes selecionados para o programa: "),
-                                         "O gráfico abaixo mostra o número total de participantes ",
-                                         tags$strong("selecionados"),
-                                         " para o programa, desagregados por sexo e por distrito ou comunidade conforme os filtros aplicados."
-                                       )
-                                     ),
-                                     downloadButton("download_inscritos", "📥 Baixar Inscritos", icon = icon("download")),
-                                     withSpinner(plotlyOutput("registradosPorProvincia"))
+                                  
+                                     # downloadButton("download_inscritos", "📥 Baixar Inscritos", icon = icon("download")),
+                                     uiOutput("texto_ativos"),
+                                     br(),
+                                     withSpinner(plotlyOutput("grafico_ativos"))
                               ),
                               
                               column(6,
-                                     div(
-                                       style = "background-color:#f5f3f4; padding:12px; border-radius:6px; margin-bottom:20px;",
-                                       tags$p(
-                                         style = "margin: 0; text-align: justify;",
-                                         tags$b("Nivel de escolaridade dos participantes: "),
-                                         "O gráfico abaixo mostra o número total de participantes ",
-                                         tags$strong(""),
-                                         " para o programa, desagregados por sexo e por distrito ou comunidade conforme os filtros aplicados."
-                                       )
-                                     ),
-                                     # uiOutput("texto_totais"),
-                                     downloadButton("download_excel", "📥 Baixar Lista"),
+                                    
+                                     # downloadButton("download_excel", "📥 Baixar Lista"),
+                                     uiOutput("texto_escolaridade"),
+                                     br(),
                                      withSpinner(plotlyOutput("Nivel_Escolaridade"))
                               )
                             ),
@@ -74,7 +77,7 @@ ui_overview <- tabPanel("📈 Overview",
                                          " para o programa, desagregados por sexo e por distrito ou comunidade conforme os filtros aplicados."
                                        )
                                      ),
-                                     downloadButton("download_inscritos", "📥 Baixar Inscritos", icon = icon("download")),
+                                     # downloadButton("download_inscritos", "📥 Baixar Inscritos", icon = icon("download")),
                                      withSpinner(plotlyOutput("deslocados"))
                               ),
                               
@@ -90,7 +93,7 @@ ui_overview <- tabPanel("📈 Overview",
                                        )
                                      ),
                                      # uiOutput("texto_totais"),
-                                     downloadButton("download_excel", "📥 Baixar Lista"),
+                                     # downloadButton("download_excel", "📥 Baixar Lista"),
                                      withSpinner(plotlyOutput("Negocio"))
                               )
                             ),
@@ -190,11 +193,14 @@ ui_presencas <- tabPanel("📋 Presenças_PI",
                                                     selected = "TODOS")
                                       ),
                                       mainPanel(
-                                        tags$h4("A tabela a seguir ilustra a participação nas 12 sessões De PI: Os pontos roxos indicam a presença dos participantes em cada sessão, os pontos vermelhos indicam a ausência e cinzas 
-                                                indicam dados faltantes/Não Preenchidos."),
+                                        uiOutput("textoPresencas"),
                                         uiOutput("pontosPresenca"),
                                         br(),
+                                        # ⚠️ ALERTA (opcional M&E que criámos)
+                                        uiOutput("facilitadores_criticos"),
+                                        br(),
                                         downloadButton("downloadPresencas", "📥 Baixar Presenças"),
+                                        br(), br(),
                                         dataTableOutput("tabelaPresencas")
                                       )
                                     )
@@ -618,119 +624,434 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   #################### VISAO GERAL ####################
-  
-  # Observador para atualizar as comunidades conforme o distrito selecionado
+  # ================================
+  # 🔁 OBSERVER: Comunidade por Distrito
+  # ================================
   observeEvent(input$distritoInputGeral, {
-    if (!is.null(input$distritoInputGeral) && input$distritoInputGeral != "Todos") {
-      comunidades <- unique(Perfil_Abrindo_C2$Comunidade[Perfil_Abrindo_C2$Distrito == input$distritoInputGeral])
-      updateSelectInput(session, "comunidadeInputGeral",
-                        choices = c("Todos", comunidades),
-                        selected = "Todos")
-    } else {
-      updateSelectInput(session, "comunidadeInputGeral",
-                        choices = c("Todos", unique(Perfil_Abrindo_C2$Comunidade)),
-                        selected = "Todos")
-    }
-  })
-  
-  # Dados filtrados reativos com base nos inputs de distrito e comunidade
-  dadosFiltrados <- reactive({
-    dados <- Perfil_Abrindo_C2
     
     if (!is.null(input$distritoInputGeral) && input$distritoInputGeral != "Todos") {
-      dados <- dados[dados$Distrito == input$distritoInputGeral, ]
+      
+      comunidades <- Perfil_Abrindo_C2 %>%
+        dplyr::filter(Distrito == input$distritoInputGeral) %>%
+        dplyr::pull(Comunidade) %>%
+        unique() %>%
+        sort()
+      
+    } else {
+      
+      comunidades <- sort(unique(Perfil_Abrindo_C2$Comunidade))
+    }
+    
+    updateSelectInput(
+      session,
+      "comunidadeInputGeral",
+      choices = c("Todos", comunidades),
+      selected = "Todos"
+    )
+  })
+  
+  # ================================
+  # 📊 REACTIVE: DADOS FILTRADOS
+  # ================================
+  dados_filtrado <- reactive({
+    
+    df <- Perfil_Abrindo_C2
+    
+    if (!is.null(input$distritoInputGeral) && input$distritoInputGeral != "Todos") {
+      df <- df %>% dplyr::filter(Distrito == input$distritoInputGeral)
     }
     
     if (!is.null(input$comunidadeInputGeral) && input$comunidadeInputGeral != "Todos") {
-      dados <- dados[dados$Comunidade == input$comunidadeInputGeral, ]
+      df <- df %>% dplyr::filter(Comunidade == input$comunidadeInputGeral)
     }
     
-    return(dados)
+    df
   })
   
-  # Gráfico de inscritos por distrito ou comunidade e sexo
+  # ================================
+  # 📦 KPI
+  # ================================
+  output$total_part <- renderText({
+    nrow(dados_filtrado())
+  })
   
-  output$registradosPorProvincia <- renderPlotly({
+  output$total_mul <- renderText({
+    sum(dados_filtrado()$Sexo == "Feminino", na.rm = TRUE)
+  })
+  
+  output$total_hom <- renderText({
+    sum(dados_filtrado()$Sexo == "Masculino", na.rm = TRUE)
+  })
+  
+  # ================================
+  # 🧠 TEXTO RESUMO
+  # ================================
+  output$texto_resumo <- renderUI({
     
-    dados <- dadosFiltrados()
+    df <- dados_filtrado()
     
-    if (nrow(dados) > 0) {
-      
-      eixo_x_var <- ifelse(input$comunidadeInputGeral != "Todos", "Comunidade", "Distrito")
-      
-      dados_agrupados <- dados %>%
-        group_by(!!sym(eixo_x_var), Sexo) %>%
-        summarise(n = n(), .groups = "drop") %>%
-        group_by(!!sym(eixo_x_var)) %>%
-        mutate(
-          percent = round(n / sum(n) * 100, 1),
-          label_text = paste0(n, " (", percent, "%)")
+    total <- nrow(df)
+    mulheres <- sum(df$Sexo == "Feminino", na.rm = TRUE)
+    homens <- sum(df$Sexo == "Masculino", na.rm = TRUE)
+    
+    distrito_sel <- input$distritoInputGeral
+    
+    # ================================
+    # 📊 RESUMO POR DISTRITO
+    # ================================
+    resumo_distritos <- Perfil_Abrindo_C2 %>%
+      dplyr::group_by(Distrito) %>%
+      dplyr::summarise(
+        total = n(),
+        mulheres = sum(Sexo == "Feminino", na.rm = TRUE),
+        homens = sum(Sexo == "Masculino", na.rm = TRUE),
+        .groups = "drop"
+      )
+    
+    texto_distritos <- resumo_distritos %>%
+      dplyr::mutate(
+        texto = paste0(
+          "No distrito de <b>", Distrito, "</b>, registam-se ",
+          "<b>", total, "</b> participantes (",
+          "<b>", mulheres, "</b> mulheres e ",
+          "<b>", homens, "</b> homens)."
         )
-      
-      total_inscritos <- nrow(dados)
-      
-      plot_ly(
-        data = dados_agrupados,
-        x = ~get(eixo_x_var),
-        y = ~n,
-        color = ~Sexo,
-        colors = c("Feminino" = "#8054A2", "Masculino" = "#F37238"),
-        type = "bar",
-        text = ~label_text,
-        textposition = "outside"
       ) %>%
-        layout(
-          title = paste0("Participantes Selecionad@s (Total: ", total_inscritos, ")"),
-          showlegend = TRUE,
-          barmode = "group",
-          paper_bgcolor = "#f5f3f4",
-          plot_bgcolor = "#f5f3f4",
-          xaxis = list(title = eixo_x_var),
-          yaxis = list(title = "Total de Inscritos", range = c(0, max(dados_agrupados$n) * 1.1))
-        )
+      dplyr::pull(texto) %>%
+      paste(collapse = " ")
+    
+    # ================================
+    # 🎯 TEXTO FINAL
+    # ================================
+    if (distrito_sel == "Todos") {
+      
+      texto_final <- paste0(
+        "<b>Abrindo Oportunidades:</b> ",
+        "O projeto visa o fortalecimento dos sistemas alimentares, criando oportunidades de emprego para jovens e oferecendo uma resposta transformadora às barreiras estruturais que limitam o acesso ao rendimento e à inclusão económica sustentável.",
+        "<br><br>",
+        
+        "No total, foram selecionados <b>", total, "</b> participantes, dos quais ",
+        "<b>", mulheres, "</b> são mulheres e <b>", homens, "</b> homens. ",
+        
+        texto_distritos
+      )
       
     } else {
       
-      # Caso não haja dados, gráfico vazio
-      plot_ly() %>%
-        layout(
-          title = "Não há dados disponíveis para o filtro selecionado.",
-          paper_bgcolor = "#f5f3f4",
-          plot_bgcolor = "#f5f3f4",
-          xaxis = list(showticklabels = FALSE),
-          yaxis = list(showticklabels = FALSE)
-        )
-      
+      texto_final <- paste0(
+        "<b>Abrindo Oportunidades:</b> ",
+        "O projeto visa o fortalecimento dos sistemas alimentares, criando oportunidades de emprego para jovens e oferecendo uma resposta transformadora às barreiras estruturais que limitam o acesso ao rendimento e à inclusão económica sustentável.",
+        "<br><br>",
+        
+        "No distrito de <b>", distrito_sel, "</b>, foram selecionados ",
+        "<b>", total, "</b> participantes, dos quais ",
+        "<b>", mulheres, "</b> são mulheres e <b>", homens, "</b> homens."
+      )
     }
     
+    div(
+      style = "background-color:#f5f3f4; padding:12px; border-radius:6px; margin-bottom:20px;",
+      HTML(texto_final)
+    )
+  })
+  # Gráfico de inscritos por distrito ou comunidade e sexo
+    # 
+    # # =========================
+    # # 📌 BASE REATIVA FILTRADA
+    # # =========================
+    # dados_filtrados <- reactive({
+    #   
+    #   df <- Perfil_Abrindo_C2_2026
+    #   
+    #   # filtro distrito
+    #   if (!is.null(input$distritoInputGeral) && input$distritoInputGeral != "Todos") {
+    #     df <- df %>% dplyr::filter(Distrito == input$distritoInputGeral)
+    #   }
+    #   
+    #   # filtro comunidade
+    #   if (!is.null(input$comunidadeInputGeral) && input$comunidadeInputGeral != "Todos") {
+    #     df <- df %>% dplyr::filter(Comunidade == input$comunidadeInputGeral)
+    #   }
+    #   
+    #   df
+    # })
+    # 
+    # 
+    # # =========================
+    # # 📌 UPDATE COMUNIDADE
+    # # =========================
+    # observe({
+    #   
+    #   df <- Perfil_Abrindo_C2_2026
+    #   
+    #   if (input$distritoInputGeral != "Todos") {
+    #     df <- df %>% filter(Distrito == input$distritoInputGeral)
+    #   }
+    #   
+    #   updateSelectInput(
+    #     session,
+    #     "comunidadeInputGeral",
+    #     choices = c("Todos", unique(df$Comunidade)),
+    #     selected = "Todos"
+    #   )
+    # })
+    # 
+    # 
+    # # =========================
+    # # 📊 REGISTRADOS POR PROVÍNCIA
+    # # =========================
+    # output$registradosPorProvincia <- renderPlotly({
+    #   
+    #   dados <- dados_filtrados()
+    #   req(nrow(dados) > 0)
+    #   
+    #   eixo_x_var <- ifelse(input$comunidadeInputGeral != "Todos", "Comunidade", "Distrito")
+    #   
+    #   dados_agrupados <- dados %>%
+    #     dplyr::group_by(.data[[eixo_x_var]], Sexo) %>%
+    #     dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+    #     dplyr::group_by(.data[[eixo_x_var]]) %>%
+    #     dplyr::mutate(
+    #       percent = round(n / sum(n) * 100, 1),
+    #       label_text = paste0(n, " (", percent, "%)")
+    #     ) %>%
+    #     dplyr::ungroup()
+    #   
+    #   total_inscritos <- nrow(dados)
+    #   
+    #   plot_ly(
+    #     data = dados_agrupados,
+    #     x = ~.data[[eixo_x_var]],
+    #     y = ~n,
+    #     color = ~Sexo,
+    #     colors = c("Feminino" = "#8054A2", "Masculino" = "#F37238"),
+    #     type = "bar",
+    #     text = ~label_text,
+    #     textposition = "outside"
+    #   ) %>%
+    #     layout(
+    #       title = paste0("Participantes Selecionad@s (Total: ", total_inscritos, ")"),
+    #       barmode = "group",
+    #       paper_bgcolor = "#f5f3f4",
+    #       plot_bgcolor = "#f5f3f4",
+    #       xaxis = list(title = eixo_x_var),
+    #       yaxis = list(
+    #         title = "Total de Inscritos",
+    #         range = c(0, max(dados_agrupados$n, na.rm = TRUE) * 1.1)
+    #       )
+    #     )
+    # })
+    
+  # =========================
+  # 📦 FUNÇÃO: PARTICIPANTES ATIVOS
+  # =========================
+  filtrar_participantes_ativos <- function(df, distrito = NULL, comunidade = NULL) {
+    
+    df_filtrado <- df
+    
+    # =========================
+    # 📍 FILTRO DISTRITO
+    # =========================
+    if (!is.null(distrito) && distrito != "Todos") {
+      df_filtrado <- df_filtrado %>%
+        dplyr::filter(Distrito == distrito)
+    }
+    
+    # =========================
+    # 📍 FILTRO COMUNIDADE
+    # =========================
+    if (!is.null(comunidade) && comunidade != "Todos") {
+      df_filtrado <- df_filtrado %>%
+        dplyr::filter(Comunidade == comunidade)
+    }
+    
+    # =========================
+    # 📌 GARANTIR FORMATO CORRETO DAS SESSÕES
+    # =========================
+    df_filtrado <- df_filtrado %>%
+      dplyr::mutate(
+        dplyr::across(
+          dplyr::starts_with("Sessao"),
+          ~ tolower(as.character(.))
+        )
+      )
+    
+    # =========================
+    # 📌 PARTICIPANTES ATIVOS
+    # (pelo menos 1 sessão = presente)
+    # =========================
+    df_filtrado %>%
+      dplyr::filter(
+        dplyr::if_any(
+          dplyr::starts_with("Sessao"),
+          ~ !is.na(.) & . == "presente"
+        )
+      )
+  }
+  
+  # =========================
+  # 📌 BASE REATIVA
+  # =========================
+  dados_ativos <- reactive({
+    
+    filtrar_participantes_ativos(
+      df = Perfil_Abrindo_C2_2026,
+      distrito = input$distritoInputGeral,
+      comunidade = input$comunidadeInputGeral
+    )
   })
   
-  output$Nivel_Escolaridade <- renderPlotly({
+  # =========================
+  # 🔄 UPDATE COMUNIDADE
+  # =========================
+  observe({
     
-    df <- Perfil_Abrindo_C2 %>%
-      filter(!is.na(Nivel_Educacao)) %>%
-      count(Nivel_Educacao) %>%
-      mutate(
+    df <- Perfil_Abrindo_C2_2026
+    
+    if (!is.null(input$distritoInputGeral) && input$distritoInputGeral != "Todos") {
+      df <- df %>%
+        dplyr::filter(Distrito == input$distritoInputGeral)
+    }
+    
+    updateSelectInput(
+      session,
+      "comunidadeInputGeral",
+      choices = c("Todos", sort(unique(df$Comunidade))),
+      selected = "Todos"
+    )
+  })
+  
+  # =========================
+  # 📊 GRÁFICO (ATIVOS)
+  # =========================
+  output$grafico_ativos <- plotly::renderPlotly({
+    
+    dados <- dados_ativos()
+    req(nrow(dados) > 0)
+    
+    eixo_x <- ifelse(
+      input$comunidadeInputGeral != "Todos",
+      "Comunidade",
+      "Distrito"
+    )
+    
+    dados_agrupados <- dados %>%
+      dplyr::group_by(.data[[eixo_x]], Sexo) %>%
+      dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+      dplyr::group_by(.data[[eixo_x]]) %>%
+      dplyr::mutate(
+        percent = round(n / sum(n) * 100, 1),
+        label_text = paste0(n, " (", percent, "%)")
+      ) %>%
+      dplyr::ungroup()
+    
+    total <- nrow(dados)
+    
+    plotly::plot_ly(
+      data = dados_agrupados,
+      x = ~.data[[eixo_x]],
+      y = ~n,
+      color = ~Sexo,
+      colors = c("Feminino" = "#8054A2", "Masculino" = "#F37238"),
+      type = "bar",
+      text = ~label_text,
+      textposition = "outside"
+    ) %>%
+      plotly::layout(
+        title = paste0("Participantes que iniciaram a formação (Total: ", total, ")"),
+        barmode = "group",
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor = "#f5f3f4",
+        xaxis = list(title = eixo_x),
+        yaxis = list(
+          title = "Número de Participantes",
+          range = c(0, max(dados_agrupados$n, na.rm = TRUE) * 1.1)
+        )
+      )
+  })
+  
+  # =========================
+  # 🧠 TEXTO DINÂMICO
+  # =========================
+  output$texto_ativos <- renderUI({
+    
+    df <- dados_ativos()
+    
+    total <- nrow(df)
+    mulheres <- sum(df$Sexo == "Feminino", na.rm = TRUE)
+    homens <- sum(df$Sexo == "Masculino", na.rm = TRUE)
+    
+    perc_mul <- ifelse(total > 0, round(mulheres / total * 100, 1), 0)
+    perc_hom <- ifelse(total > 0, round(homens / total * 100, 1), 0)
+    
+    distrito_sel <- input$distritoInputGeral
+    
+    div(
+      style = "background-color:#f5f3f4; padding:12px; border-radius:6px;",
+      
+      tags$p(
+        style = "margin:0; text-align:justify;",
+        
+        tags$b("Distribuição por sexo: "),
+        
+        if (distrito_sel == "Todos") {
+          
+          tagList(
+            "O gráfico apresenta participantes que participaram em pelo menos uma sessão. ",
+            "No total existem ", tags$b(total), " participantes que iniciaram a formação, dos quais ",
+            tags$b(mulheres), " (", tags$b(paste0(perc_mul, "%")), ") são mulheres e ",
+            tags$b(homens), " (", tags$b(paste0(perc_hom, "%")), ") homens."
+          )
+          
+        } else {
+          
+          tagList(
+            "No distrito de ", tags$b(distrito_sel), ", existem ",
+            tags$b(total), " participantes que iniciaram a formação, dos quais ",
+            tags$b(mulheres), " (", tags$b(paste0(perc_mul, "%")), ") são mulheres e ",
+            tags$b(homens), " (", tags$b(paste0(perc_hom, "%")), ") homens."
+          )
+        }
+      )
+    )
+  })
+    
+  # =========================
+  # 📚 ESCOLARIDADE
+  # =========================
+  output$Nivel_Escolaridade <- plotly::renderPlotly({
+    
+    dados <- dados_ativos()
+    
+    # =========================
+    # 📌 LIMPEZA + AGRUPAMENTO
+    # =========================
+    df <- dados %>%
+      dplyr::filter(!is.na(Nivel_Educacao), Nivel_Educacao != "") %>%
+      dplyr::count(Nivel_Educacao, name = "n") %>%
+      dplyr::mutate(
         perc = round(n / sum(n) * 100, 1),
         label = paste0(n, " (", perc, "%)")
       )
     
-    # 🔴 Caso não haja dados
+    # =========================
+    # ⚠️ CASO SEM DADOS
+    # =========================
     if (nrow(df) == 0) {
       return(
-        plot_ly() %>%
-          layout(
-            title = "Não há dados disponíveis para o filtro selecionado.",
+        plotly::plot_ly() %>%
+          plotly::layout(
+            title = "Sem dados de escolaridade para o filtro selecionado.",
             paper_bgcolor = "#f5f3f4",
-            plot_bgcolor = "#f5f3f4",
-            xaxis = list(showticklabels = FALSE),
-            yaxis = list(showticklabels = FALSE)
+            plot_bgcolor = "#f5f3f4"
           )
       )
     }
     
-    # 🟢 Gráfico horizontal com valores no meio
-    plot_ly(
+    # =========================
+    # 📊 GRÁFICO
+    # =========================
+    plotly::plot_ly(
       data = df,
       x = ~n,
       y = ~reorder(Nivel_Educacao, n),
@@ -738,26 +1059,89 @@ server <- function(input, output, session) {
       orientation = "h",
       text = ~label,
       textposition = "inside",
-      insidetextanchor = "middle",
       marker = list(color = "#69C7BE")
     ) %>%
-      layout(
-        title = "Nível de Escolaridade dos Participantes",
+      plotly::layout(
+        title = "Escolaridade dos Participantes Que Iniciaram a Formação",
         paper_bgcolor = "#f5f3f4",
         plot_bgcolor = "#f5f3f4",
         xaxis = list(title = "Número de Participantes"),
-        yaxis = list(title = ""),
-        showlegend = FALSE
+        yaxis = list(title = "")
       )
   })
+    
+  # =========================
+  # 🧠 TEXTO DINÂMICO - ESCOLARIDADE
+  # =========================
+  output$texto_escolaridade <- renderUI({
+    
+    dados <- dados_ativos()
+    
+    total <- nrow(dados)
+    
+    # =========================
+    # 📌 DISTRIBUIÇÃO ESCOLARIDADE
+    # =========================
+    df <- dados %>%
+      dplyr::filter(!is.na(Nivel_Educacao), Nivel_Educacao != "") %>%
+      dplyr::count(Nivel_Educacao, name = "n") %>%
+      dplyr::mutate(
+        perc = round(n / sum(n) * 100, 1)
+      )
+    
+    # =========================
+    # ⚠️ SEM DADOS
+    # =========================
+    if (nrow(df) == 0 || total == 0) {
+      return(
+        div(
+          style = "background-color:#f5f3f4; padding:12px; border-radius:6px;",
+          tags$p("Não existem dados de escolaridade para o filtro selecionado.")
+        )
+      )
+    }
+    
+    # =========================
+    # 📊 NIVEL MAIS FREQUENTE
+    # =========================
+    nivel_top <- df %>%
+      dplyr::arrange(desc(n)) %>%
+      dplyr::slice(1)
+    
+    # =========================
+    # 🧠 TEXTO
+    # =========================
+    div(
+      style = "background-color:#f5f3f4; padding:12px; border-radius:6px;",
+      
+      tags$p(
+        style = "margin:0; text-align:justify;",
+        
+        tags$b("Nível de escolaridade dos participantes que iniciaram a formação: "),
+        
+        "Foram analisados ", tags$b(total), " participantes que iniciaram a formação. ",
+        
+        "O nível de escolaridade mais frequente é ",
+        tags$b(nivel_top$Nivel_Educacao), 
+        " com ", tags$b(nivel_top$n), 
+        " participantes (", tags$b(paste0(nivel_top$perc, "%")), "). ",
+        
+        "A distribuição mostra variação entre diferentes níveis de formação, refletindo a heterogeneidade do grupo de participantes."
+      )
+    )
+  })
   
-  
- ################ Deslocados 
+    # =========================
+    # 🚚 DESLOCADOS
+    # =========================
     output$deslocados <- renderPlotly({
-      df <- Perfil_Abrindo_C2 %>%
+      
+      dados <- dados_ativos()
+      
+      df <- dados %>%
         filter(!is.na(Deslocado), !is.na(Distrito)) %>%
         count(Distrito, Deslocado) %>%
-        complete(Distrito, Deslocado, fill = list(n = 0)) %>%
+        tidyr::complete(Distrito, Deslocado, fill = list(n = 0)) %>%
         group_by(Distrito) %>%
         mutate(
           perc = round(n / sum(n) * 100, 1),
@@ -777,32 +1161,24 @@ server <- function(input, output, session) {
       ) %>%
         layout(
           title = "Deslocados por Distrito (%)",
-          
-          # 👉 fundo
           paper_bgcolor = "#f5f3f4",
           plot_bgcolor = "#f5f3f4",
-          
-          # 👉 eixos visíveis
-          xaxis = list(
-            title = "Distrito",
-            showticklabels = TRUE
-          ),
-          yaxis = list(
-            title = "Percentagem",
-            ticksuffix = "%",
-            showticklabels = TRUE
-          ),
-          
           barmode = "group"
         )
     })
- ####################  NEGOCIOs
     
+    
+    # =========================
+    # 🏢 NEGÓCIO
+    # =========================
     output$Negocio <- renderPlotly({
-      df <- Perfil_Abrindo_C2 %>%
+      
+      dados <- dados_ativos()
+      
+      df <- dados %>%
         filter(!is.na(Act_negocio), !is.na(Distrito)) %>%
         count(Distrito, Act_negocio) %>%
-        complete(Distrito, Act_negocio, fill = list(n = 0)) %>%
+        tidyr::complete(Distrito, Act_negocio, fill = list(n = 0)) %>%
         group_by(Distrito) %>%
         mutate(
           perc = round(n / sum(n) * 100, 1),
@@ -822,25 +1198,13 @@ server <- function(input, output, session) {
       ) %>%
         layout(
           title = "Participantes com Negócio por Distrito (%)",
-          
-          # 👉 fundo
           paper_bgcolor = "#f5f3f4",
           plot_bgcolor = "#f5f3f4",
-          
-          # 👉 eixos visíveis
-          xaxis = list(
-            title = "Distrito",
-            showticklabels = TRUE
-          ),
-          yaxis = list(
-            title = "Percentagem",
-            ticksuffix = "%",
-            showticklabels = TRUE
-          ),
-          
           barmode = "group"
         )
     })
+    
+  
   # output$registradosPorProvincia <- renderPlot({
   #   dados <- dadosFiltrados()
   #   
@@ -1421,24 +1785,50 @@ server <- function(input, output, session) {
   
   ################################ ACOMPANHAMENTO ##################################
   
-  # Atualiza opções do facilitador
-  # 🔁 Atualiza Comunidade com base no Distrito
+  
+  # =========================
+  # 🎨 FUNÇÃO PONTOS (OBRIGATÓRIA)
+  # =========================
+  formatar_pontos <- function(x) {
+    sapply(x, function(valor) {
+      
+      if (is.na(valor) || valor == "") {
+        '<span style="color: grey; font-size: 40px;">&#9679;</span>'
+        
+      } else if (tolower(valor) == "presente") {
+        '<span style="color: purple; font-size: 40px;">&#9679;</span>'
+        
+      } else if (tolower(valor) == "ausente") {
+        '<span style="color: red; font-size: 40px;">&#9679;</span>'
+        
+      } else {
+        '<span style="color: grey; font-size: 40px;">&#9679;</span>'
+      }
+    })
+  }
+  
+  # =========================
+  # 🔁 UPDATE COMUNIDADE
+  # =========================
   observeEvent(input$distritoInput, {
+    
     if (input$distritoInput == "TODOS") {
-      comunidades_filtradas <- unique(Presencas_PI$Comunidade)
+      comunidades <- unique(Presencas_PI$Comunidade)
     } else {
-      comunidades_filtradas <- unique(
-        Presencas_PI$Comunidade[Presencas_PI$Distrito == input$distritoInput]
-      )
+      comunidades <- unique(Presencas_PI$Comunidade[Presencas_PI$Distrito == input$distritoInput])
     }
     
-    updateSelectInput(session, "comunidadeAcompanhamento",
-                      choices = c("TODAS", comunidades_filtradas),
-                      selected = "TODAS")
+    updateSelectInput(
+      session,
+      "comunidadeAcompanhamento",
+      choices = c("TODAS", sort(comunidades)),
+      selected = "TODAS"
+    )
   })
   
-  
-  # 🔁 Atualiza Facilitador com base no Distrito + Comunidade
+  # =========================
+  # 🔁 UPDATE FACILITADOR
+  # =========================
   observeEvent(
     list(input$distritoInput, input$comunidadeAcompanhamento), {
       
@@ -1452,74 +1842,85 @@ server <- function(input, output, session) {
         df <- df[df$Comunidade == input$comunidadeAcompanhamento, ]
       }
       
-      facilitadores_filtrados <- unique(df$Facilitador)
+      facilitadores <- unique(df$Facilitador)
       
-      updateSelectInput(session, "facilitadorInput",
-                        choices = c("TODOS", facilitadores_filtrados),
-                        selected = "TODOS")
+      updateSelectInput(
+        session,
+        "facilitadorInput",
+        choices = c("TODOS", sort(facilitadores)),
+        selected = "TODOS"
+      )
     }
   )
   
-  
-  # 🎨 Função para pontos visuais
-  formatar_pontos <- function(x) {
-    sapply(x, function(valor) {
-      if (is.na(valor) || valor == "" || is.null(valor)) {
-        '<span style="color: grey; font-size: 40px;">&#9679;</span>'
-      } else if (valor == "Presente") {
-        '<span style="color: purple; font-size: 40px;">&#9679;</span>'
-      } else if (valor == "Ausente") {
-        '<span style="color: red; font-size: 40px;">&#9679;</span>'
-      } else {
-        '<span style="color: grey; font-size: 40px;">&#9679;</span>'
-      }
-    })
-  }
-  
-  
-  # 📊 Dados filtrados
+  # =========================
+  # 📊 DADOS FILTRADOS + QUALIDADE
+  # =========================
   dados_filtered <- reactive({
+    
     df <- Presencas_PI
     
-    # 🔹 Distrito
     if (input$distritoInput != "TODOS") {
       df <- df[df$Distrito == input$distritoInput, ]
     }
     
-    # 🔹 Comunidade
     if (input$comunidadeAcompanhamento != "TODAS") {
       df <- df[df$Comunidade == input$comunidadeAcompanhamento, ]
     }
     
-    # 🔹 Facilitador
     if (input$facilitadorInput != "TODOS") {
       df <- df[df$Facilitador == input$facilitadorInput, ]
     }
     
-    # 🔥 Sessões
     col_sessoes <- grep("^Sessao", names(df), value = TRUE)
     
-    # 🔥 Remover participantes sem presença
+    # =========================
+    # 📌 QUALIDADE DE DADOS (12 SESSÕES)
+    # =========================
+    total_sessoes_programa <- 12
+    
+    df <- df %>%
+      dplyr::mutate(
+        
+        sessoes_preenchidas = rowSums(
+          dplyr::across(all_of(col_sessoes), ~ !is.na(.) & . != ""),
+          na.rm = TRUE
+        ),
+        
+        taxa_preenchimento = round((sessoes_preenchidas / total_sessoes_programa) * 100, 1),
+        
+        taxa_preenchimento = ifelse(taxa_preenchimento > 100, 100, taxa_preenchimento),
+        
+        qualidade = dplyr::case_when(
+          taxa_preenchimento >= 90 ~ "Excelente",
+          taxa_preenchimento >= 70 ~ "Bom",
+          taxa_preenchimento >= 50 ~ "Médio",
+          TRUE ~ "Crítico"
+        )
+      )
+    
     df <- df[rowSums(df[col_sessoes] == "Presente", na.rm = TRUE) > 0, ]
     
     df
   })
   
-  
-  # 📌 Legenda
+  # =========================
+  # 📌 LEGENDA
+  # =========================
   output$pontosPresenca <- renderUI({
-    tagList(
-      HTML(paste0(
-        '<span style="color: purple; font-size: 25px;">&#9679;</span> Presente &nbsp;&nbsp;',
-        '<span style="color: red; font-size: 25px;">&#9679;</span> Ausente &nbsp;&nbsp;',
-        '<span style="color: grey; font-size: 25px;">&#9679;</span> Não Preenchido'
-      ))
-    )
+    
+    HTML(paste0(
+      '<span style="color: purple; font-size: 25px;">&#9679;</span> Presente &nbsp;&nbsp;',
+      '<span style="color: red; font-size: 25px;">&#9679;</span> Ausente &nbsp;&nbsp;',
+      '<span style="color: grey; font-size: 25px;">&#9679;</span> Não Preenchido'
+    ))
   })
   
-  
-  # 📋 Tabela
+  # =========================
+  # 📋 TABELA (CRÍTICOS PRIMEIRO)
+  # =========================
   output$tabelaPresencas <- renderDataTable({
+    
     df <- dados_filtered()
     
     col_sessoes <- grep("^Sessao", names(df), value = TRUE)
@@ -1527,10 +1928,25 @@ server <- function(input, output, session) {
     df[col_sessoes] <- lapply(df[col_sessoes], as.character)
     df[col_sessoes] <- lapply(df[col_sessoes], formatar_pontos)
     
+    df$qualidade <- factor(
+      df$qualidade,
+      levels = c("Crítico", "Médio", "Bom", "Excelente")
+    )
+    
     datatable(
-      df[, c("Distrito", "Comunidade", "Nome_Participante", col_sessoes)],
+      df[order(df$qualidade), c(
+        "Distrito",
+        "Comunidade",
+        "Facilitador",
+        "Nome_Participante",
+        "taxa_preenchimento",
+        "qualidade",
+        col_sessoes
+      )],
+      
       escape = FALSE,
       rownames = FALSE,
+      
       options = list(
         pageLength = 10,
         dom = 'lfrtip',
@@ -1539,6 +1955,9 @@ server <- function(input, output, session) {
     )
   })
   
+  # =========================
+  # 📥 DOWNLOAD
+  # =========================
   output$downloadPresencas <- downloadHandler(
     
     filename = function() {
@@ -1551,16 +1970,68 @@ server <- function(input, output, session) {
       
       df <- dados_filtered()
       
-      # 🔹 Identificar colunas de sessões
       col_sessoes <- grep("^Sessao", names(df), value = TRUE)
       
-      # 🔹 Selecionar colunas para exportação
       df_export <- df[, c("Distrito", "Comunidade", "Nome_Participante", col_sessoes)]
       
-      # 🔹 Exportar para Excel
       write_xlsx(df_export, path = file)
     }
   )
+  
+  # =========================
+  # 🧠 TEXTO DINÂMICO (M&E)
+  # =========================
+  output$textoPresencas <- renderUI({
+    
+    df <- dados_filtered()
+    
+    total <- nrow(df)
+    
+    media <- round(mean(df$taxa_preenchimento, na.rm = TRUE), 1)
+    
+    criticos <- sum(df$qualidade == "Crítico")
+    excelentes <- sum(df$qualidade == "Excelente")
+    
+    facilitadores_criticos <- df %>%
+      dplyr::group_by(Facilitador) %>%
+      dplyr::summarise(media = mean(taxa_preenchimento, na.rm = TRUE), .groups = "drop") %>%
+      dplyr::filter(media < 60) %>%
+      dplyr::pull(Facilitador)
+    
+    txt_facilitadores <- if (length(facilitadores_criticos) == 0) {
+      "Nenhum facilitador crítico identificado."
+    } else {
+      paste(facilitadores_criticos, collapse = ", ")
+    }
+    
+    div(
+      style = "background-color:#f5f3f4; padding:12px; border-radius:6px;",
+      
+      tags$p(
+        style = "margin:0; text-align:justify;",
+        
+        tags$b("📊 Qualidade de Dados do PI: "),
+        
+        "Foram analisados ", tags$b(total), " participantes. ",
+        
+        "A taxa média de preenchimento é de ", tags$b(paste0(media, "%")), ". ",
+        
+        tags$br(), tags$br(),
+        
+        "✔ Excelentes: ", tags$b(excelentes), " | ",
+        "🔴 Críticos: ", tags$b(criticos), ". ",
+        
+        tags$br(), tags$br(),
+        
+        tags$b("⚠️ Facilitadores com baixa qualidade: "),
+        txt_facilitadores,
+        
+        tags$br(), tags$br(),
+        
+        "Este painel permite monitoria contínua da qualidade de registo das sessões PI."
+      )
+    )
+  })
   ################# MONITORIA BPA #########################
   # 
   # dados_filtrados_boaspraticas <- reactive({
