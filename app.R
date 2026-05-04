@@ -196,7 +196,7 @@ ui_presencas <- tabPanel("📋 Presenças_PI",
                                         uiOutput("textoPresencas"),
                                         uiOutput("pontosPresenca"),
                                         br(),
-                                        # ⚠️ ALERTA (opcional M&E que criámos)
+                              
                                         uiOutput("facilitadores_criticos"),
                                         br(),
                                         downloadButton("downloadPresencas", "📥 Baixar Presenças"),
