@@ -516,31 +516,39 @@ dados_qualidade$Total <- rowSums(dados_qualidade[, 6:ncol(dados_qualidade)], na.
 # 
 # # ######################### Sessões de Agricultura #################################
 # # 
-# Presencas_BPA <- read_excel("Presencas_BPA.xlsx")
-# 
-# # # # RENAME
-# Presencas_BPA <- Presencas_BPA %>% rename(
-#   Data_Registo = Nome_De_Participante.Modified_Time ,
-#   Distrito = Nome_De_Participante.Distrito,
-#   Sexo = Nome_De_Participante.Sexo,
-#   Presenca = Presen_a,
-#   Comunidade = Nome_De_Participante.Comunidade,
-#   Nome_Sessao = Nome_da_Sess_o,
-#   Nome_Participante = Nome_De_Participante.Nome_Participante,
-#   Facilitador = Nome_De_Participante.Facilitador
-# )
-# 
-# Presencas_BPA <- Presencas_BPA %>%
-#   select(-c(7, 9, 10))
+Presencas_BPA <- read_excel("Presencas_BPA.xlsx")
+
+# # # RENAME
+Presencas_BPA <- Presencas_BPA %>% rename(
+  # Data_Registo = Nome_De_Participante.Modified_Time ,
+  Distrito = Nome_De_Participante.DISTRITO,
+  Sexo = Nome_De_Participante.Sexo,
+  Presenca = Presen_a,
+  Comunidade = Nome_De_Participante.COMUNIDADE,
+  Nome_Sessao = Nome_da_Sess_o,
+  Nome_Participante = Nome_De_Participante.Nome_Participante,
+  Facilitador = Control_Facilitador
+)
+
+Presencas_BPA <- Presencas_BPA %>%
+  select(-c(6, 8, 9))
 # # 
 # # Pivotando e removendo duplicações de sessão
-# Presencas_BPA <- Presencas_BPA %>%
-#   pivot_wider(
-#     names_from = Nome_Sessao,
-#     values_from = Presenca,
-#     values_fn = first
-#   )
-# 
+Presencas_BPA <- Presencas_BPA %>%
+  pivot_wider(
+    names_from = Nome_Sessao,
+    values_from = Presenca,
+    values_fn = first
+  )
+
+
+
+Presencas_BPA <- Presencas_BPA %>%
+  rename_with(
+    .cols = matches("^\\d+\\."),
+    .fn = ~ paste0("Sessão ", sub("\\..*", "", .x))
+  )
+
 # # Identificar colunas "Sessão X"
 # sessao_cols <- names(Presencas_BPA)[grepl("^Sessão\\s\\d+$", names(Presencas_BPA))]
 # 

@@ -259,72 +259,72 @@ ui_Qualidade <- tabPanel("🔍 Avaliação_PI",
 # ==============================
 # 8. UI: Boas Práticas
 # ==============================
-# ui_boaspraticas <- tabPanel("🌱 Boas Práticas",
-#                             fluidPage(
-#                               sidebarLayout(
-#                                 sidebarPanel(
-#                                   conditionalPanel(
-#                                     condition = "input.tabSelected == 'Geral'",
-#                                     selectInput("distritoInputboaspraticas", "Escolha o Distrito:",
-#                                                 choices = c("Todos", unique(Presencas_BPA$Distrito)),
-#                                                 selected = "Todos"),
-#                                     selectInput("comunidadeInputboaspraticas", "Escolha a Comunidade:",
-#                                                 choices = c("Todos", unique(Presencas_BPA$Comunidade)),
-#                                                 selected = "Todos")
-#                                   ),
-#                                   
-#                                   conditionalPanel(
-#                                     condition = "input.tabSelected == 'Presenças'",
-#                                     selectInput("distrito_presencas", "Escolha o Distrito:",
-#                                                 choices = c("Todos", unique(Presencas_BPA$Distrito)),
-#                                                 selected = "Todos"),
-#                                     selectInput("comunidade_presencas", "Escolha a Comunidade:",
-#                                                 choices = c("Todos", unique(Presencas_BPA$Comunidade)),
-#                                                 selected = "Todos")
-#                                   ),
-#                                   
-#                                   conditionalPanel(
-#                                     condition = "input.tabSelected == 'Acompanhamento'",
-#                                     selectInput("distrito_acompanhamento", "Escolha o Distrito:",
-#                                                 choices = c("Todos", unique(Presencas_BPA$Distrito)),
-#                                                 selected = "Todos"),
-#                                     selectInput("comunidade_acompanhamento", "Escolha a Comunidade:",
-#                                                 choices = c("Todos", unique(Presencas_BPA$Comunidade)),
-#                                                 selected = "Todos"),
-#                                     selectInput("facilitador_acompanhamento", "Escolha o Facilitador:",
-#                                                 choices = c("Todos", unique(Presencas_BPA$Facilitador)),
-#                                                 selected = "Todos")
-#                                   )
-#                                 ),
-#                                 
-#                                 mainPanel(
-#                                   tabsetPanel(
-#                                     id = "tabSelected",
-#                                     
-#                                     tabPanel("Geral",
-#                                              fluidRow(
-#                                                column(6, withSpinner(plotlyOutput("registradosboaspraticas"))),
-#                                                column(6, withSpinner(plotOutput("desistentes")))
-#                                              )
-#                                     ),
-#                                     
-#                                     tabPanel("Presenças",
-#                                              fluidRow(
-#                                                column(12, withSpinner(plotlyOutput("grafic")))
-#                                              )
-#                                     ),
-#                                     
-#                                     tabPanel("Acompanhamento",
-#                                              fluidRow(
-#                                                tags$h6("A tabela abaixo apresenta os dados sobre a participação individual nas Sessões e os pontos roxos indicam a presença dos participantes em cada sessão, enquanto os pontos vermelhos indicam a ausência."),
-#                                                uiOutput("PontosPresencas"),
-#                                                column(12, dataTableOutput("Individual")))
-#                                     )
-#                                   )
-#                                 )
-#                               )
-#                             )
-# )
+ui_boaspraticas <- tabPanel("🌱 Boas Práticas",
+                            fluidPage(
+                              sidebarLayout(
+                                sidebarPanel(
+                                  conditionalPanel(
+                                    condition = "input.tabSelected == 'Geral'",
+                                    selectInput("distritoInputboaspraticas", "Escolha o Distrito:",
+                                                choices = c("Todos", unique(Presencas_BPA$Distrito)),
+                                                selected = "Todos"),
+                                    selectInput("comunidadeInputboaspraticas", "Escolha a Comunidade:",
+                                                choices = c("Todos", unique(Presencas_BPA$Comunidade)),
+                                                selected = "Todos")
+                                  ),
+
+                                  conditionalPanel(
+                                    condition = "input.tabSelected == 'Presenças'",
+                                    selectInput("distrito_presencas", "Escolha o Distrito:",
+                                                choices = c("Todos", unique(Presencas_BPA$Distrito)),
+                                                selected = "Todos"),
+                                    selectInput("comunidade_presencas", "Escolha a Comunidade:",
+                                                choices = c("Todos", unique(Presencas_BPA$Comunidade)),
+                                                selected = "Todos")
+                                  ),
+
+                                  conditionalPanel(
+                                    condition = "input.tabSelected == 'Acompanhamento'",
+                                    selectInput("distrito_acompanhamento", "Escolha o Distrito:",
+                                                choices = c("Todos", unique(Presencas_BPA$Distrito)),
+                                                selected = "Todos"),
+                                    selectInput("comunidade_acompanhamento", "Escolha a Comunidade:",
+                                                choices = c("Todos", unique(Presencas_BPA$Comunidade)),
+                                                selected = "Todos"),
+                                    selectInput("facilitador_acompanhamento", "Escolha o Facilitador:",
+                                                choices = c("Todos", unique(Presencas_BPA$Facilitador)),
+                                                selected = "Todos")
+                                  )
+                                ),
+
+                                mainPanel(
+                                  tabsetPanel(
+                                    id = "tabSelected",
+
+                                    tabPanel("Geral",
+                                             fluidRow(
+                                               column(6, withSpinner(plotlyOutput("registradosboaspraticas"))),
+                                               column(6, withSpinner(plotOutput("desistentes")))
+                                             )
+                                    ),
+
+                                    tabPanel("Presenças",
+                                             fluidRow(
+                                               column(12, withSpinner(plotlyOutput("grafic")))
+                                             )
+                                    ),
+
+                                    tabPanel("Acompanhamento",
+                                             fluidRow(
+                                               tags$h6("A tabela abaixo apresenta os dados sobre a participação individual nas Sessões e os pontos roxos indicam a presença dos participantes em cada sessão, enquanto os pontos vermelhos indicam a ausência."),
+                                               uiOutput("PontosPresencas"),
+                                               column(12, dataTableOutput("Individual")))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+)
 # ==============================
 # 7. UI: Poupança
 # ==============================
@@ -612,7 +612,7 @@ ui <- fluidPage(
     ui_overview,
     ui_presencas,
     ui_Qualidade,
-    # ui_boaspraticas,
+    ui_boaspraticas,
     # ui_poupanca,
     # ui_Mentoria, 
     ui_admin
@@ -2034,191 +2034,191 @@ server <- function(input, output, session) {
   })
   ################# MONITORIA BPA #########################
   # 
-  # dados_filtrados_boaspraticas <- reactive({
-  #   dados <- Presencas_BPA
-  #   
-  #   if (input$distritoInputboaspraticas != "Todos") {
-  #     dados <- dados %>% filter(Distrito == input$distritoInputboaspraticas)
-  #   }
-  #   if (input$comunidadeInputboaspraticas != "Todos") {
-  #     dados <- dados %>% filter(Comunidade == input$comunidadeInputboaspraticas)
-  #   }
-  #   
-  #   dados
-  # })
-  # 
-  # output$registradosboaspraticas <- renderPlotly({
-  #   
-  #   dados <- dados_filtrados_boaspraticas()
-  #   
-  #   if (nrow(dados) > 0) {
-  #     
-  #     eixo_x_var <- ifelse(
-  #       input$comunidadeInputboaspraticas != "Todos",
-  #       "Comunidade",
-  #       "Distrito"
-  #     )
-  #     
-  #     dados_agrupados <- dados %>%
-  #       group_by(!!sym(eixo_x_var), Sexo) %>%
-  #       summarise(n = n(), .groups = "drop") %>%
-  #       group_by(!!sym(eixo_x_var)) %>%
-  #       mutate(
-  #         percent = round(n / sum(n) * 100, 1),
-  #         label_text = paste0(n, " (", percent, "%)")
-  #       )
-  #     
-  #     total_inscritos <- nrow(dados)
-  #     
-  #     plot_ly(
-  #       data = dados_agrupados,
-  #       x = ~get(eixo_x_var),
-  #       y = ~n,
-  #       color = ~Sexo,
-  #       colors = c(
-  #         "Feminino" = "#8054A2", "Masculino" = "#F37238"
-  #       ),
-  #       type = "bar",
-  #       text = ~label_text,
-  #       textposition = "outside"
-  #     ) %>%
-  #       layout(
-  #         title = paste0(
-  #           "Participantes Selecionad@s (Total: ",
-  #           total_inscritos,
-  #           ")"
-  #         ),
-  #         showlegend = TRUE,
-  #         barmode = "group",
-  #         paper_bgcolor = "#f5f3f4",
-  #         plot_bgcolor  = "#f5f3f4",
-  #         xaxis = list(title = eixo_x_var),
-  #         yaxis = list(
-  #           title = "Total de Inscritos",
-  #           range = c(0, max(dados_agrupados$n) * 1.1)
-  #         ),
-  #         legend = list(title = list(text = "<b>Sexo</b>"))
-  #       )
-  #     
-  #   } else {
-  #     
-  #     plot_ly() %>%
-  #       layout(
-  #         title = "Não há dados disponíveis para o filtro selecionado.",
-  #         paper_bgcolor = "#f5f3f4",
-  #         plot_bgcolor  = "#f5f3f4",
-  #         xaxis = list(showticklabels = FALSE),
-  #         yaxis = list(showticklabels = FALSE)
-  #       )
-  #   }
-  # })
-  # 
-  # 
+  dados_filtrados_boaspraticas <- reactive({
+    dados <- Presencas_BPA
+
+    if (input$distritoInputboaspraticas != "Todos") {
+      dados <- dados %>% filter(Distrito == input$distritoInputboaspraticas)
+    }
+    if (input$comunidadeInputboaspraticas != "Todos") {
+      dados <- dados %>% filter(Comunidade == input$comunidadeInputboaspraticas)
+    }
+
+    dados
+  })
+
+  output$registradosboaspraticas <- renderPlotly({
+
+    dados <- dados_filtrados_boaspraticas()
+
+    if (nrow(dados) > 0) {
+
+      eixo_x_var <- ifelse(
+        input$comunidadeInputboaspraticas != "Todos",
+        "Comunidade",
+        "Distrito"
+      )
+
+      dados_agrupados <- dados %>%
+        group_by(!!sym(eixo_x_var), Sexo) %>%
+        summarise(n = n(), .groups = "drop") %>%
+        group_by(!!sym(eixo_x_var)) %>%
+        mutate(
+          percent = round(n / sum(n) * 100, 1),
+          label_text = paste0(n, " (", percent, "%)")
+        )
+
+      total_inscritos <- nrow(dados)
+
+      plot_ly(
+        data = dados_agrupados,
+        x = ~get(eixo_x_var),
+        y = ~n,
+        color = ~Sexo,
+        colors = c(
+          "Feminino" = "#8054A2", "Masculino" = "#F37238"
+        ),
+        type = "bar",
+        text = ~label_text,
+        textposition = "outside"
+      ) %>%
+        layout(
+          title = paste0(
+            "Participantes Selecionad@s (Total: ",
+            total_inscritos,
+            ")"
+          ),
+          showlegend = TRUE,
+          barmode = "group",
+          paper_bgcolor = "#f5f3f4",
+          plot_bgcolor  = "#f5f3f4",
+          xaxis = list(title = eixo_x_var),
+          yaxis = list(
+            title = "Total de Inscritos",
+            range = c(0, max(dados_agrupados$n) * 1.1)
+          ),
+          legend = list(title = list(text = "<b>Sexo</b>"))
+        )
+
+    } else {
+
+      plot_ly() %>%
+        layout(
+          title = "Não há dados disponíveis para o filtro selecionado.",
+          paper_bgcolor = "#f5f3f4",
+          plot_bgcolor  = "#f5f3f4",
+          xaxis = list(showticklabels = FALSE),
+          yaxis = list(showticklabels = FALSE)
+        )
+    }
+  })
+
+
   
   # ############## Presencas BPA #############
   # 
-  # output$grafic <- renderPlotly({
-  #   
-  #   dados_filtrados <- Presencas_BPA %>%
-  #     filter(
-  #       (input$distrito_presencas == "Todos" | Distrito == input$distrito_presencas),
-  #       (input$comunidade_presencas == "Todos" | Comunidade == input$comunidade_presencas)
-  #     )
-  #   
-  #   if (nrow(dados_filtrados) == 0) {
-  #     return(
-  #       plot_ly() %>%
-  #         layout(
-  #           title = "Não há dados disponíveis para os filtros selecionados.",
-  #           paper_bgcolor = "#f5f3f4",
-  #           plot_bgcolor  = "#f5f3f4",
-  #           xaxis = list(showticklabels = FALSE),
-  #           yaxis = list(showticklabels = FALSE)
-  #         )
-  #     )
-  #   }
-  #   
-  #   dados_long <- dados_filtrados %>%
-  #     pivot_longer(
-  #       cols = starts_with("Sessão"),
-  #       names_to = "Sessao",
-  #       values_to = "Presenca"
-  #     ) %>%
-  #     filter(Presenca == "Presente")
-  #   
-  #   dados_agrupados <- dados_long %>%
-  #     group_by(Sessao, Sexo) %>%
-  #     summarise(Total = n(), .groups = "drop")
-  #   
-  #   ordem_sessoes <- dados_agrupados %>%
-  #     distinct(Sessao) %>%
-  #     mutate(Sessao_Num = readr::parse_number(Sessao)) %>%
-  #     arrange(Sessao_Num) %>%
-  #     pull(Sessao)
-  #   
-  #   dados_agrupados <- dados_agrupados %>%
-  #     mutate(Sessao = factor(Sessao, levels = ordem_sessoes))
-  #   
-  #   totais_sessao <- dados_agrupados %>%
-  #     group_by(Sessao) %>%
-  #     summarise(total = sum(Total), .groups = "drop")
-  #   
-  #   dados_agrupados <- dados_agrupados %>%
-  #     group_by(Sessao) %>%
-  #     arrange(Sexo) %>%
-  #     mutate(
-  #       y0 = cumsum(lag(Total, default = 0)),
-  #       y_center = y0 + Total / 2
-  #     )
-  #   
-  #   annotations_segmentos <- lapply(seq_len(nrow(dados_agrupados)), function(i) {
-  #     list(
-  #       x = dados_agrupados$Sessao[i],
-  #       y = dados_agrupados$y_center[i],
-  #       text = dados_agrupados$Total[i],
-  #       showarrow = FALSE,
-  #       font = list(size = 12, color = "white")
-  #     )
-  #   })
-  #   
-  #   annotations_totais <- lapply(seq_len(nrow(totais_sessao)), function(i) {
-  #     list(
-  #       x = totais_sessao$Sessao[i],
-  #       y = totais_sessao$total[i] + 5,
-  #       text = paste("Total:", totais_sessao$total[i]),
-  #       showarrow = FALSE,
-  #       font = list(size = 12, color = "black")
-  #     )
-  #   })
-  #   
-  #   all_annotations <- c(annotations_segmentos, annotations_totais)
-  #   
-  #   plot_ly(
-  #     data = dados_agrupados,
-  #     x = ~Sessao,
-  #     y = ~Total,
-  #     color = ~Sexo,
-  #     colors = c(
-  #       "Feminino" = "#8054A2", "Masculino" = "#F37238"
-  #     ),
-  #     type = "bar",
-  #     hovertemplate = paste(
-  #       "%{x}<br>",
-  #       "Sexo: %{color}<br>",
-  #       "Presentes: %{y}<extra></extra>"
-  #     )
-  #   ) %>%
-  #     layout(
-  #       title = "Número de Presentes em cada Sessão",
-  #       barmode = "stack",
-  #       paper_bgcolor = "#f5f3f4",
-  #       plot_bgcolor  = "#f5f3f4",
-  #       xaxis = list(title = "Sessão"),
-  #       yaxis = list(title = "Número de Presentes"),
-  #       legend = list(title = list(text = "<b>Sexo</b>")),
-  #       annotations = all_annotations
-  #     )
-  # })
+  output$grafic <- renderPlotly({
+
+    dados_filtrados <- Presencas_BPA %>%
+      filter(
+        (input$distrito_presencas == "Todos" | Distrito == input$distrito_presencas),
+        (input$comunidade_presencas == "Todos" | Comunidade == input$comunidade_presencas)
+      )
+
+    if (nrow(dados_filtrados) == 0) {
+      return(
+        plot_ly() %>%
+          layout(
+            title = "Não há dados disponíveis para os filtros selecionados.",
+            paper_bgcolor = "#f5f3f4",
+            plot_bgcolor  = "#f5f3f4",
+            xaxis = list(showticklabels = FALSE),
+            yaxis = list(showticklabels = FALSE)
+          )
+      )
+    }
+
+    dados_long <- dados_filtrados %>%
+      pivot_longer(
+        cols = starts_with("Sessão"),
+        names_to = "Sessao",
+        values_to = "Presenca"
+      ) %>%
+      filter(Presenca == "Presente")
+
+    dados_agrupados <- dados_long %>%
+      group_by(Sessao, Sexo) %>%
+      summarise(Total = n(), .groups = "drop")
+
+    ordem_sessoes <- dados_agrupados %>%
+      distinct(Sessao) %>%
+      mutate(Sessao_Num = readr::parse_number(Sessao)) %>%
+      arrange(Sessao_Num) %>%
+      pull(Sessao)
+
+    dados_agrupados <- dados_agrupados %>%
+      mutate(Sessao = factor(Sessao, levels = ordem_sessoes))
+
+    totais_sessao <- dados_agrupados %>%
+      group_by(Sessao) %>%
+      summarise(total = sum(Total), .groups = "drop")
+
+    dados_agrupados <- dados_agrupados %>%
+      group_by(Sessao) %>%
+      arrange(Sexo) %>%
+      mutate(
+        y0 = cumsum(lag(Total, default = 0)),
+        y_center = y0 + Total / 2
+      )
+
+    annotations_segmentos <- lapply(seq_len(nrow(dados_agrupados)), function(i) {
+      list(
+        x = dados_agrupados$Sessao[i],
+        y = dados_agrupados$y_center[i],
+        text = dados_agrupados$Total[i],
+        showarrow = FALSE,
+        font = list(size = 12, color = "white")
+      )
+    })
+
+    annotations_totais <- lapply(seq_len(nrow(totais_sessao)), function(i) {
+      list(
+        x = totais_sessao$Sessao[i],
+        y = totais_sessao$total[i] + 5,
+        text = paste("Total:", totais_sessao$total[i]),
+        showarrow = FALSE,
+        font = list(size = 12, color = "black")
+      )
+    })
+
+    all_annotations <- c(annotations_segmentos, annotations_totais)
+
+    plot_ly(
+      data = dados_agrupados,
+      x = ~Sessao,
+      y = ~Total,
+      color = ~Sexo,
+      colors = c(
+        "Feminino" = "#8054A2", "Masculino" = "#F37238"
+      ),
+      type = "bar",
+      hovertemplate = paste(
+        "%{x}<br>",
+        "Sexo: %{color}<br>",
+        "Presentes: %{y}<extra></extra>"
+      )
+    ) %>%
+      layout(
+        title = "Número de Presentes em cada Sessão",
+        barmode = "stack",
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        xaxis = list(title = "Sessão"),
+        yaxis = list(title = "Número de Presentes"),
+        legend = list(title = list(text = "<b>Sexo</b>")),
+        annotations = all_annotations
+      )
+  })
   
   
   
@@ -2290,95 +2290,95 @@ server <- function(input, output, session) {
   
   ############ Acompanhamento Individual ############
   
-  # # Função para formatar os pontos coloridos
-  # formatar_pontos <- function(x) {
-  #   sapply(x, function(valor) {
-  #     if (is.na(valor) || valor == "" || is.null(valor)) {
-  #       '<span style="color: grey; font-size: 30px;">&#9679;</span>'
-  #     } else if (tolower(valor) == "presente") {
-  #       '<span style="color: purple; font-size: 30px;">&#9679;</span>'
-  #     } else if (tolower(valor) == "ausente") {
-  #       '<span style="color: red; font-size: 30px;">&#9679;</span>'
-  #     } else {
-  #       '<span style="color: grey; font-size: 30px;">&#9679;</span>'
-  #     }
-  #   })
-  # }
-  # 
-  # # Legenda visual
-  # output$PontosPresencas <- renderUI({
-  #   HTML(paste0(
-  #     '<span style="color: purple; font-size: 25px;">&#9679;</span> Presente &nbsp;&nbsp;',
-  #     '<span style="color: red; font-size: 25px;">&#9679;</span> Ausente &nbsp;&nbsp;',
-  #     '<span style="color: grey; font-size: 25px;">&#9679;</span> Não Preenchido'
-  #   ))
-  # })
-  # 
-  # # Filtros dinâmicos em cascata
-  # observeEvent(input$distrito_acompanhamento, {
-  #   data <- Presencas_BPA
-  #   if (input$distrito_acompanhamento != "Todos") {
-  #     data <- data[data$Distrito == input$distrito_acompanhamento, ]
-  #   }
-  #   updateSelectInput(session, "comunidade_acompanhamento",
-  #                     choices = c("Todos", unique(data$Comunidade)),
-  #                     selected = "Todos")
-  # })
-  # 
-  # observeEvent(input$comunidade_acompanhamento, {
-  #   data <- Presencas_BPA
-  #   if (input$comunidade_acompanhamento != "Todos") {
-  #     data <- data[data$Comunidade == input$comunidade_acompanhamento, ]
-  #   }
-  #   updateSelectInput(session, "facilitador_acompanhamento",
-  #                     choices = c("Todos", unique(data$Facilitador)),
-  #                     selected = "Todos")
-  # })
-  # 
-  # # Dados filtrados
-  # dados_acompanhamento <- reactive({
-  #   data <- Presencas_BPA
-  #   
-  #   if (input$distrito_acompanhamento != "Todos") {
-  #     data <- data[data$Distrito == input$distrito_acompanhamento, ]
-  #   }
-  #   
-  #   if (input$comunidade_acompanhamento != "Todos") {
-  #     data <- data[data$Comunidade == input$comunidade_acompanhamento, ]
-  #   }
-  #   
-  #   if (input$facilitador_acompanhamento != "Todos") {
-  #     data <- data[data$Facilitador == input$facilitador_acompanhamento, ]
-  #   }
-  #   
-  #   data
-  # })
-  # 
-  # 
-  # output$Individual <- renderDataTable({
-  #   df <- dados_acompanhamento()
-  #   
-  #   
-  #   col_sessoes <- grep("^Sess", names(df), value = TRUE)
-  #   
-  #   col_sessoes <- col_sessoes[order(as.numeric(gsub("\\D", "", col_sessoes)))]
-  #   
-  #   df[col_sessoes] <- lapply(df[col_sessoes], as.character)
-  #   df[col_sessoes] <- lapply(df[col_sessoes], formatar_pontos)
-  #   
-  #   datatable(
-  #     df[, c("Facilitador", "Nome_Participante", col_sessoes)],
-  #     escape = FALSE,
-  #     rownames = FALSE,
-  #     options = list(
-  #       pageLength = 10,
-  #       dom = 'lfrtip',
-  #       columnDefs = list(list(className = 'dt-center', targets = "_all"))
-  #     )
-  #   )
-  # })
-  # 
-  # 
+  # Função para formatar os pontos coloridos
+  formatar_pontos <- function(x) {
+    sapply(x, function(valor) {
+      if (is.na(valor) || valor == "" || is.null(valor)) {
+        '<span style="color: grey; font-size: 30px;">&#9679;</span>'
+      } else if (tolower(valor) == "presente") {
+        '<span style="color: purple; font-size: 30px;">&#9679;</span>'
+      } else if (tolower(valor) == "ausente") {
+        '<span style="color: red; font-size: 30px;">&#9679;</span>'
+      } else {
+        '<span style="color: grey; font-size: 30px;">&#9679;</span>'
+      }
+    })
+  }
+
+  # Legenda visual
+  output$PontosPresencas <- renderUI({
+    HTML(paste0(
+      '<span style="color: purple; font-size: 25px;">&#9679;</span> Presente &nbsp;&nbsp;',
+      '<span style="color: red; font-size: 25px;">&#9679;</span> Ausente &nbsp;&nbsp;',
+      '<span style="color: grey; font-size: 25px;">&#9679;</span> Não Preenchido'
+    ))
+  })
+
+  # Filtros dinâmicos em cascata
+  observeEvent(input$distrito_acompanhamento, {
+    data <- Presencas_BPA
+    if (input$distrito_acompanhamento != "Todos") {
+      data <- data[data$Distrito == input$distrito_acompanhamento, ]
+    }
+    updateSelectInput(session, "comunidade_acompanhamento",
+                      choices = c("Todos", unique(data$Comunidade)),
+                      selected = "Todos")
+  })
+
+  observeEvent(input$comunidade_acompanhamento, {
+    data <- Presencas_BPA
+    if (input$comunidade_acompanhamento != "Todos") {
+      data <- data[data$Comunidade == input$comunidade_acompanhamento, ]
+    }
+    updateSelectInput(session, "facilitador_acompanhamento",
+                      choices = c("Todos", unique(data$Facilitador)),
+                      selected = "Todos")
+  })
+
+  # Dados filtrados
+  dados_acompanhamento <- reactive({
+    data <- Presencas_BPA
+
+    if (input$distrito_acompanhamento != "Todos") {
+      data <- data[data$Distrito == input$distrito_acompanhamento, ]
+    }
+
+    if (input$comunidade_acompanhamento != "Todos") {
+      data <- data[data$Comunidade == input$comunidade_acompanhamento, ]
+    }
+
+    if (input$facilitador_acompanhamento != "Todos") {
+      data <- data[data$Facilitador == input$facilitador_acompanhamento, ]
+    }
+
+    data
+  })
+
+
+  output$Individual <- renderDataTable({
+    df <- dados_acompanhamento()
+
+
+    col_sessoes <- grep("^Sess", names(df), value = TRUE)
+
+    col_sessoes <- col_sessoes[order(as.numeric(gsub("\\D", "", col_sessoes)))]
+
+    df[col_sessoes] <- lapply(df[col_sessoes], as.character)
+    df[col_sessoes] <- lapply(df[col_sessoes], formatar_pontos)
+
+    datatable(
+      df[, c("Facilitador", "Nome_Participante", col_sessoes)],
+      escape = FALSE,
+      rownames = FALSE,
+      options = list(
+        pageLength = 10,
+        dom = 'lfrtip',
+        columnDefs = list(list(className = 'dt-center', targets = "_all"))
+      )
+    )
+  })
+
+
   
   ################################AVALIACAO#################
   #############QUALILDADE DAS SESSOES #####
@@ -3214,6 +3214,16 @@ server <- function(input, output, session) {
       )
       
       writexl::write_xlsx(Presencas_Colectivas, "Presencas_Colectivas.xlsx")
+      
+      
+      Presencas_BPA <- RZohoCreator::get_records(
+        "associacaomuva",
+        "monitoria-edm",
+        "BPA_CICLO_3_Report",
+        access_token
+      )
+      
+      writexl::write_xlsx(Presencas_BPA, "Presencas_BPA.xlsx")
       
       Qualidade_Sessoes <- RZohoCreator::get_records(
         "associacaomuva",
