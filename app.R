@@ -331,121 +331,121 @@ ui_boaspraticas <- tabPanel("🌱 Boas Práticas",
 # ==============================
 # 6.1. UI: Poupança (com fluidRow)
 # ==============================
-# ui_poupanca <- tabPanel("💰 Poupança",
-#                         tabsetPanel(
-#                           
-#                           # ---------------- TAB 1 - GRUPOS ----------------
-#                           tabPanel("📊 Grupos",
-#                                    sidebarLayout(
-#                                      sidebarPanel(
-#                                        selectInput("filtro_poupanca", "Selecione o Distrito:",
-#                                                    choices = c("Todos", unique(Grupos_Poupanca$Distrito)),
-#                                                    selected = "Todos"),
-#                                        
-#                                        selectInput("filtro_comunidade", "Selecione a Comunidade:",
-#                                                    choices = "Todos",
-#                                                    selected = "Todos"),
-#                                        
-#                                        selectInput("filtro_grupo", "Selecione o Grupo:",
-#                                                    choices = "Todos",
-#                                                    selected = "Todos")
-#                                      ),
-#                                      mainPanel(
-#                                        # Value boxes
-#                                        fluidRow(
-#                                          column(3,
-#                                                 div(style = "background-color:#6f42c1; color:white; padding:15px; border-radius:12px; text-align:center;",
-#                                                     h5("Total de Grupos"),
-#                                                     h3(textOutput("total_grupos"))
-#                                                 )
-#                                          ),
-#                                          column(3,
-#                                                 div(style = "background-color:#20c997; color:white; padding:15px; border-radius:12px; text-align:center;",
-#                                                     h5("Total de Participantes"),
-#                                                     h3(textOutput("total_participantes"))
-#                                                 )
-#                                          )     
-#                                        ),
-#                                        br(),
-#                                        fluidRow(
-#                                          column(6, plotlyOutput("grafico_Participantes")),
-#                                          column(6, plotOutput("grafico_emprestimo"))
-#                                        ),
-#                                        DTOutput("tabela_poupanca")
-#                                      )
-#                                    )
-#                           ),
-#                           
-#                           # ---------------- TAB 2 - VALORES POUPADOS ----------------
-#                           tabPanel("💵 Valores Poupados",
-#                                    sidebarLayout(
-#                                      sidebarPanel(
-#                                        selectInput("filtro_distrito_valores", "Selecione o Distrito:",
-#                                                    choices = c("Todos", unique(Geral_Poupanca$Distrito)),
-#                                                    selected = "Todos"),
-#                                        
-#                                        selectInput("filtro_comunidade_valores", "Selecione a Comunidade:",
-#                                                    choices = "Todos",
-#                                                    selected = "Todos"),
-#                                        
-#                                        selectInput("filtro_grupo_valores", "Selecione o Grupo:",
-#                                                    choices = "Todos",
-#                                                    selected = "Todos")
-#                                      ),
-#                                      mainPanel(
-#                                        fluidRow(
-#                                          column(3,
-#                                                 div(style = "background-color:#5cd6c7; color:white; padding:15px; border-radius:12px; text-align:center;",
-#                                                     h5("Poupança Acumulada"),
-#                                                     h3(textOutput("total_poupanca"))
-#                                                 )
-#                                          ),
-#                                          column(3,
-#                                                 div(style = "background-color:#F77333; color:white; padding:15px; border-radius:12px; text-align:center;",
-#                                                     h5("Empréstimo Acumulado"),
-#                                                     h3(textOutput("total_emprestimo"))
-#                                                 )
-#                                          ),
-#                                          column(3,
-#                                                 div(style = "background-color:#9942D4; color:white; padding:15px; border-radius:12px; text-align:center;",
-#                                                     h5("Fundo Social"),
-#                                                     h3(textOutput("total_Fundo_Social"))
-#                                                 )
-#                                          )
-#                                          # ,
-#                                          # column(3,
-#                                          #        div(style = "background-color:#0d6efd; color:white; padding:15px; border-radius:12px; text-align:center;",
-#                                          #            h5("Dívida Acumulada"),
-#                                          #            h3(textOutput("valores_divida_acumulada"))
-#                                          #        )
-#                                          # )
-#                                        ),
-#                                        br(),
-#                                        # Primeiro gráfico em linha completa
-#                                        fluidRow(
-#                                          column(12, plotlyOutput("grafico_valores"))
-#                                        ),
-#                                        
-#                                        br(),
-#                                        fluidRow(
-#                                          column(12, plotOutput("grafico_valores_poupanca"))
-#                                        ),
-#                                        
-#                                        br(),
-#                                        
-#                                        # Segundo gráfico em linha completa
-#                                        fluidRow(
-#                                          column(12, plotOutput("grafico_valores_emprestimo"))
-#                                        ),
-#                                        
-#                                        br(),
-#                                        # DTOutput("tabela_valores_poupanca")
-#                                      )
-#                                    )
-#                           )
-#                           
-#                         )
-# )
+ui_poupanca <- tabPanel("💰 Poupança",
+                        tabsetPanel(
+
+                          # ---------------- TAB 1 - GRUPOS ----------------
+                          tabPanel("📊 Grupos",
+                                   sidebarLayout(
+                                     sidebarPanel(
+                                       selectInput("filtro_poupanca", "Selecione o Distrito:",
+                                                   choices = c("Todos", unique(Grupos_Poupanca$Distrito)),
+                                                   selected = "Todos"),
+
+                                       selectInput("filtro_comunidade", "Selecione a Comunidade:",
+                                                   choices = "Todos",
+                                                   selected = "Todos"),
+
+                                       selectInput("filtro_grupo", "Selecione o Grupo:",
+                                                   choices = "Todos",
+                                                   selected = "Todos")
+                                     ),
+                                     mainPanel(
+                                       # Value boxes
+                                       fluidRow(
+                                         column(3,
+                                                div(style = "background-color:#6f42c1; color:white; padding:15px; border-radius:12px; text-align:center;",
+                                                    h5("Total de Grupos"),
+                                                    h3(textOutput("total_grupos"))
+                                                )
+                                         ),
+                                         column(3,
+                                                div(style = "background-color:#20c997; color:white; padding:15px; border-radius:12px; text-align:center;",
+                                                    h5("Total de Participantes"),
+                                                    h3(textOutput("total_participantes"))
+                                                )
+                                         )
+                                       ),
+                                       br(),
+                                       fluidRow(
+                                         column(6, plotlyOutput("grafico_Participantes")),
+                                         column(6, plotOutput("grafico_emprestimo"))
+                                       ),
+                                       DTOutput("tabela_poupanca")
+                                     )
+                                   )
+                          ),
+
+                          # ---------------- TAB 2 - VALORES POUPADOS ----------------
+                          tabPanel("💵 Valores Poupados",
+                                   sidebarLayout(
+                                     sidebarPanel(
+                                       selectInput("filtro_distrito_valores", "Selecione o Distrito:",
+                                                   choices = c("Todos", unique(Geral_Poupanca$Distrito)),
+                                                   selected = "Todos"),
+
+                                       selectInput("filtro_comunidade_valores", "Selecione a Comunidade:",
+                                                   choices = "Todos",
+                                                   selected = "Todos"),
+
+                                       selectInput("filtro_grupo_valores", "Selecione o Grupo:",
+                                                   choices = "Todos",
+                                                   selected = "Todos")
+                                     ),
+                                     mainPanel(
+                                       fluidRow(
+                                         column(3,
+                                                div(style = "background-color:#5cd6c7; color:white; padding:15px; border-radius:12px; text-align:center;",
+                                                    h5("Poupança Acumulada"),
+                                                    h3(textOutput("total_poupanca"))
+                                                )
+                                         ),
+                                         column(3,
+                                                div(style = "background-color:#F77333; color:white; padding:15px; border-radius:12px; text-align:center;",
+                                                    h5("Empréstimo Acumulado"),
+                                                    h3(textOutput("total_emprestimo"))
+                                                )
+                                         ),
+                                         column(3,
+                                                div(style = "background-color:#9942D4; color:white; padding:15px; border-radius:12px; text-align:center;",
+                                                    h5("Fundo Social"),
+                                                    h3(textOutput("total_Fundo_Social"))
+                                                )
+                                         )
+                                         # ,
+                                         # column(3,
+                                         #        div(style = "background-color:#0d6efd; color:white; padding:15px; border-radius:12px; text-align:center;",
+                                         #            h5("Dívida Acumulada"),
+                                         #            h3(textOutput("valores_divida_acumulada"))
+                                         #        )
+                                         # )
+                                       ),
+                                       br(),
+                                       # Primeiro gráfico em linha completa
+                                       fluidRow(
+                                         column(12, plotlyOutput("grafico_valores"))
+                                       ),
+
+                                       br(),
+                                       fluidRow(
+                                         column(12, plotOutput("grafico_valores_poupanca"))
+                                       ),
+
+                                       br(),
+
+                                       # Segundo gráfico em linha completa
+                                       fluidRow(
+                                         column(12, plotOutput("grafico_valores_emprestimo"))
+                                       ),
+
+                                       br(),
+                                       # DTOutput("tabela_valores_poupanca")
+                                     )
+                                   )
+                          )
+
+                        )
+)
 
 # ui_Mentoria <- tabPanel(
 #   "Mentoria",
@@ -613,7 +613,7 @@ ui <- fluidPage(
     ui_presencas,
     ui_Qualidade,
     ui_boaspraticas,
-    # ui_poupanca,
+    ui_poupanca,
     # ui_Mentoria, 
     ui_admin
   )
@@ -2585,405 +2585,405 @@ server <- function(input, output, session) {
   # 
   # ################# PAGINA POUPANCA
   # 
-  # Grupos_Poupanca <- Grupos_Poupanca %>%
-  #   mutate(
-  #     Total_Feminino = parse_number(as.character(Total_Feminino)),
-  #     Total_Masculino = parse_number(as.character(Total_Masculino)),
-  #     Total_Membros_grupo = parse_number(as.character(Total_Membros_grupo))
-  #   )
-  # 
-  # # Atualiza as comunidades conforme o distrito
-  # # 1️⃣ Atualiza Comunidades conforme o Distrito
-  # observe({
-  #   req(input$filtro_poupanca)
-  #   
-  #   if (input$filtro_poupanca == "Todos") {
-  #     comunidades <- unique(Grupos_Poupanca$Comunidade)
-  #   } else {
-  #     comunidades <- unique(Grupos_Poupanca %>% 
-  #                             filter(Distrito == input$filtro_poupanca) %>% 
-  #                             pull(Comunidade))
-  #   }
-  #   
-  #   updateSelectInput(session, "filtro_comunidade",
-  #                     choices = c("Todos", comunidades),
-  #                     selected = "Todos")
-  # })
-  # 
-  # # 2️⃣ Atualiza Grupos conforme a Comunidade selecionada
-  # observe({
-  #   req(input$filtro_comunidade)
-  #   
-  #   df <- Grupos_Poupanca
-  #   
-  #   if(input$filtro_comunidade != "Todos") {
-  #     df <- df %>% filter(Comunidade == input$filtro_comunidade)
-  #   }
-  #   if(input$filtro_poupanca != "Todos") {
-  #     df <- df %>% filter(Distrito == input$filtro_poupanca)
-  #   }
-  #   
-  #   grupos <- unique(df$Nome_do_Grupo)
-  #   
-  #   updateSelectInput(session, "filtro_grupo",
-  #                     choices = c("Todos", grupos),
-  #                     selected = "Todos")
-  # })
-  # 
-  # 
-  # # Base filtrada
-  # filtered_poupanca <- reactive({
-  #   df <- Grupos_Poupanca
-  #   if (input$filtro_poupanca != "Todos") {
-  #     df <- df %>% filter(Distrito == input$filtro_poupanca)
-  #   }
-  #   if (input$filtro_comunidade != "Todos") {
-  #     df <- df %>% filter(Comunidade == input$filtro_comunidade)
-  #   }
-  #   if (input$filtro_grupo != "Todos") {
-  #     df <- df %>% filter(Nome_do_Grupo == input$filtro_grupo)
-  #   }
-  #   df
-  # })
-  # 
-  # 
-  # 
-  # # Value boxes
-  # output$total_grupos <- renderText({
-  #   n_distinct(filtered_poupanca()$Nome_do_Grupo)
-  # })
-  # 
-  # output$total_participantes <- renderText({
-  #   df <- filtered_poupanca()
-  #   
-  #   total_fem <- sum(df$Total_Feminino, na.rm = TRUE)
-  #   total_masc <- sum(df$Total_Masculino, na.rm = TRUE)
-  #   
-  #   # Usando símbolos ♂ e ♀
-  #   paste0("\u2640 ", total_fem, " | \u2642 ", total_masc)
-  # })
-  # 
-  # output$grafico_Participantes <- renderPlotly({
-  #   
-  #   dados_plot <- filtered_poupanca() %>%
-  #     group_by(Distrito) %>%
-  #     summarise(
-  #       Total_Feminino = sum(Total_Feminino, na.rm = TRUE),
-  #       Total_Masculino = sum(Total_Masculino, na.rm = TRUE),
-  #       Total_Membros = sum(Total_Membros_grupo, na.rm = TRUE),
-  #       .groups = "drop"
-  #     )
-  #   
-  #   if (nrow(dados_plot) == 0) {
-  #     return(
-  #       plot_ly() %>%
-  #         layout(
-  #           title = "Não há dados disponíveis para os filtros selecionados.",
-  #           paper_bgcolor = "#f5f3f4",
-  #           plot_bgcolor  = "#f5f3f4",
-  #           xaxis = list(showticklabels = FALSE),
-  #           yaxis = list(showticklabels = FALSE)
-  #         )
-  #     )
-  #   }
-  #   
-  #   dados_long <- dados_plot %>%
-  #     tidyr::pivot_longer(
-  #       cols = c(Total_Feminino, Total_Masculino),
-  #       names_to = "Sexo",
-  #       values_to = "Total"
-  #     ) %>%
-  #     mutate(
-  #       Sexo = recode(Sexo,
-  #                     "Total_Feminino" = "Feminino",
-  #                     "Total_Masculino" = "Masculino")
-  #     )
-  #   
-  #   plot_ly(
-  #     data = dados_long,
-  #     x = ~Distrito,
-  #     y = ~Total,
-  #     color = ~Sexo,
-  #     colors = c("Feminino" = "#8054A2", "Masculino" = "#F37238"),
-  #     type = "bar",
-  #     text = ~Total,
-  #     textposition = "outside"
-  #   ) %>%
-  #     layout(
-  #       title = list(
-  #         text = "Participantes por Distrito",
-  #         font = list(size = 16, face = "bold")
-  #       ),
-  #       barmode = "group",
-  #       paper_bgcolor = "#f5f3f4",
-  #       plot_bgcolor  = "#f5f3f4",
-  #       xaxis = list(title = "Distrito"),
-  #       yaxis = list(title = "Número de Participantes"),
-  #       legend = list(title = list(text = "<b>Sexo</b>"))
-  #     )
-  # })
+  Grupos_Poupanca <- Grupos_Poupanca %>%
+    mutate(
+      Total_Feminino = parse_number(as.character(Total_Feminino)),
+      Total_Masculino = parse_number(as.character(Total_Masculino)),
+      Total_Membros_grupo = parse_number(as.character(Total_Membros_grupo))
+    )
+
+  # Atualiza as comunidades conforme o distrito
+  # 1️⃣ Atualiza Comunidades conforme o Distrito
+  observe({
+    req(input$filtro_poupanca)
+
+    if (input$filtro_poupanca == "Todos") {
+      comunidades <- unique(Grupos_Poupanca$Comunidade)
+    } else {
+      comunidades <- unique(Grupos_Poupanca %>%
+                              filter(Distrito == input$filtro_poupanca) %>%
+                              pull(Comunidade))
+    }
+
+    updateSelectInput(session, "filtro_comunidade",
+                      choices = c("Todos", comunidades),
+                      selected = "Todos")
+  })
+
+  # 2️⃣ Atualiza Grupos conforme a Comunidade selecionada
+  observe({
+    req(input$filtro_comunidade)
+
+    df <- Grupos_Poupanca
+
+    if(input$filtro_comunidade != "Todos") {
+      df <- df %>% filter(Comunidade == input$filtro_comunidade)
+    }
+    if(input$filtro_poupanca != "Todos") {
+      df <- df %>% filter(Distrito == input$filtro_poupanca)
+    }
+
+    grupos <- unique(df$Nome_do_Grupo)
+
+    updateSelectInput(session, "filtro_grupo",
+                      choices = c("Todos", grupos),
+                      selected = "Todos")
+  })
+
+
+  # Base filtrada
+  filtered_poupanca <- reactive({
+    df <- Grupos_Poupanca
+    if (input$filtro_poupanca != "Todos") {
+      df <- df %>% filter(Distrito == input$filtro_poupanca)
+    }
+    if (input$filtro_comunidade != "Todos") {
+      df <- df %>% filter(Comunidade == input$filtro_comunidade)
+    }
+    if (input$filtro_grupo != "Todos") {
+      df <- df %>% filter(Nome_do_Grupo == input$filtro_grupo)
+    }
+    df
+  })
+
+
+
+  # Value boxes
+  output$total_grupos <- renderText({
+    n_distinct(filtered_poupanca()$Nome_do_Grupo)
+  })
+
+  output$total_participantes <- renderText({
+    df <- filtered_poupanca()
+
+    total_fem <- sum(df$Total_Feminino, na.rm = TRUE)
+    total_masc <- sum(df$Total_Masculino, na.rm = TRUE)
+
+    # Usando símbolos ♂ e ♀
+    paste0("\u2640 ", total_fem, " | \u2642 ", total_masc)
+  })
+
+  output$grafico_Participantes <- renderPlotly({
+
+    dados_plot <- filtered_poupanca() %>%
+      group_by(Distrito) %>%
+      summarise(
+        Total_Feminino = sum(Total_Feminino, na.rm = TRUE),
+        Total_Masculino = sum(Total_Masculino, na.rm = TRUE),
+        Total_Membros = sum(Total_Membros_grupo, na.rm = TRUE),
+        .groups = "drop"
+      )
+
+    if (nrow(dados_plot) == 0) {
+      return(
+        plot_ly() %>%
+          layout(
+            title = "Não há dados disponíveis para os filtros selecionados.",
+            paper_bgcolor = "#f5f3f4",
+            plot_bgcolor  = "#f5f3f4",
+            xaxis = list(showticklabels = FALSE),
+            yaxis = list(showticklabels = FALSE)
+          )
+      )
+    }
+
+    dados_long <- dados_plot %>%
+      tidyr::pivot_longer(
+        cols = c(Total_Feminino, Total_Masculino),
+        names_to = "Sexo",
+        values_to = "Total"
+      ) %>%
+      mutate(
+        Sexo = recode(Sexo,
+                      "Total_Feminino" = "Feminino",
+                      "Total_Masculino" = "Masculino")
+      )
+
+    plot_ly(
+      data = dados_long,
+      x = ~Distrito,
+      y = ~Total,
+      color = ~Sexo,
+      colors = c("Feminino" = "#8054A2", "Masculino" = "#F37238"),
+      type = "bar",
+      text = ~Total,
+      textposition = "outside"
+    ) %>%
+      layout(
+        title = list(
+          text = "Participantes por Distrito",
+          font = list(size = 16, face = "bold")
+        ),
+        barmode = "group",
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        xaxis = list(title = "Distrito"),
+        yaxis = list(title = "Número de Participantes"),
+        legend = list(title = list(text = "<b>Sexo</b>"))
+      )
+  })
   # 
   # ######### Poupanças
   # 
   # 
-  # filtered_valores <- reactive({
-  #   df <- Geral_Poupanca
-  #   
-  #   # Filtro Distrito
-  #   if (input$filtro_distrito_valores != "Todos") {
-  #     df <- df %>% filter(Distrito == input$filtro_distrito_valores)
-  #   }
-  #   
-  #   # Filtro Comunidade
-  #   if (input$filtro_comunidade_valores != "Todos") {
-  #     df <- df %>% filter(Comunidade == input$filtro_comunidade_valores)
-  #   }
-  #   
-  #   # Filtro Grupo
-  #   if (input$filtro_grupo_valores != "Todos") {
-  #     df <- df %>% filter(Nome_Grupo == input$filtro_grupo_valores)
-  #   }
-  #   
-  #   df
-  # })
-  # 
-  # # -------------------- ATUALIZAR COMUNIDADES --------------------
-  # observeEvent(input$filtro_distrito_valores, {
-  #   comunidades <- Geral_Poupanca %>%
-  #     filter(if (input$filtro_distrito_valores == "Todos") TRUE else Distrito == input$filtro_distrito_valores) %>%
-  #     pull(Comunidade) %>% unique()
-  #   
-  #   updateSelectInput(session, "filtro_comunidade_valores",
-  #                     choices = c("Todos", comunidades),
-  #                     selected = "Todos")
-  # })
-  # 
-  # # -------------------- ATUALIZAR GRUPOS --------------------
-  # observeEvent(input$filtro_comunidade_valores, {
-  #   grupos <- Geral_Poupanca %>%
-  #     filter(if (input$filtro_comunidade_valores == "Todos") TRUE else Comunidade == input$filtro_comunidade_valores) %>%
-  #     pull(Nome_Grupo) %>% unique()
-  #   
-  #   updateSelectInput(session, "filtro_grupo_valores",
-  #                     choices = c("Todos", grupos),
-  #                     selected = "Todos")
-  # })
-  # 
-  # # -------------------- BOXES --------------------
-  # output$total_poupanca <- renderText({
-  #   sum(filtered_valores()$Poupanca_Sessao, na.rm = TRUE)
-  # })
-  # 
-  # output$total_emprestimo <- renderText({
-  #   sum(filtered_valores()$Valor_Emprestimo, na.rm = TRUE)
-  # })
-  # 
-  # output$total_Fundo_Social <- renderText({
-  #   sum(filtered_valores()$Fundo_Social, na.rm = TRUE)
-  # })
-  # 
-  # ###################### Graficos Todas Metricas
-  # 
-  # # Filtra os dados de acordo com os inputs
-  # filtered_valores <- reactive({
-  #   df <- Geral_Poupanca
-  #   
-  #   if(input$filtro_distrito_valores != "Todos"){
-  #     df <- df[df$Distrito == input$filtro_distrito_valores, ]
-  #   }
-  #   
-  #   if(input$filtro_comunidade_valores != "Todos"){
-  #     df <- df[df$Comunidade == input$filtro_comunidade_valores, ]
-  #   }
-  #   
-  #   if(input$filtro_grupo_valores != "Todos"){
-  #     df <- df[df$Nome_Grupo == input$filtro_grupo_valores, ]
-  #   }
-  #   
-  #   df
-  # })
-  # 
-  # # Atualiza opções de grupo dinamicamente quando a comunidade muda
-  # observeEvent(input$filtro_comunidade_valores, {
-  #   grupos <- Geral_Poupanca %>%
-  #     filter(if (input$filtro_comunidade_valores == "Todos") TRUE else Comunidade == input$filtro_comunidade_valores) %>%
-  #     pull(Nome_Grupo) %>% unique()
-  #   
-  #   updateSelectInput(session, "filtro_grupo_valores",
-  #                     choices = c("Todos", grupos),
-  #                     selected = "Todos")
-  # })
-  # 
-  # output$grafico_valores <- renderPlotly({
-  #   
-  #   df <- filtered_valores() %>%
-  #     group_by(Distrito) %>%
-  #     summarise(
-  #       Poupanca = sum(Poupanca_Sessao, na.rm = TRUE),
-  #       Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE),
-  #       Fundo_Social = sum(Fundo_Social, na.rm = TRUE),
-  #       .groups = "drop"
-  #     ) %>%
-  #     tidyr::pivot_longer(
-  #       cols = c(Poupanca, Emprestimo, Fundo_Social),
-  #       names_to = "Tipo",
-  #       values_to = "Valor"
-  #     ) %>%
-  #     mutate(
-  #       Tipo = factor(Tipo, levels = c("Poupanca", "Emprestimo", "Fundo_Social"))
-  #     )
-  #   
-  #   if (nrow(df) == 0) {
-  #     return(
-  #       plot_ly() %>%
-  #         layout(
-  #           title = "Não há dados disponíveis para os filtros selecionados.",
-  #           paper_bgcolor = "#f5f3f4",
-  #           plot_bgcolor  = "#f5f3f4",
-  #           xaxis = list(showticklabels = FALSE),
-  #           yaxis = list(showticklabels = FALSE)
-  #         )
-  #     )
-  #   }
-  #   
-  #   distritos <- unique(df$Distrito)
-  #   
-  #   plots <- lapply(distritos, function(dist) {
-  #     
-  #     df_dist <- df %>% filter(Distrito == dist)
-  #     
-  #     plot_ly(
-  #       data = df_dist,
-  #       x = ~Tipo,
-  #       y = ~Valor,
-  #       type = "bar",
-  #       marker = list(color = c(
-  #         "Poupanca" = "#69C7BE",
-  #         "Emprestimo" = "#F37238",
-  #         "Fundo_Social" = "#8054A2"
-  #       )[as.character(df_dist$Tipo)]),
-  #       text = ~Valor,
-  #       textposition = "outside"
-  #     ) %>%
-  #       layout(
-  #         # Adiciona o nome do Distrito como annotation no topo do gráfico
-  #         annotations = list(
-  #           list(
-  #             x = 0.5,        # centralizado horizontalmente
-  #             y = max(df_dist$Valor) * 1.05,
-  #             text = dist,
-  #             xref = "paper",
-  #             yref = "y",
-  #             showarrow = FALSE,
-  #             font = list(size = 14, face = "bold"),
-  #             xanchor = "center"
-  #           )
-  #         ),
-  #         yaxis = list(range = c(0, 500000)),
-  #         xaxis = list(title = ""),
-  #         showlegend = FALSE
-  #       )
-  #   })
-  #   
-  #   subplot(
-  #     plots,
-  #     nrows = ceiling(length(plots)/2),
-  #     shareX = TRUE,
-  #     shareY = TRUE,
-  #     titleX = TRUE,
-  #     titleY = TRUE
-  #   ) %>%
-  #     layout(
-  #       title = list(
-  #         text = "Valores por Distrito",
-  #         font = list(size = 16, face = "bold")
-  #       ),
-  #       paper_bgcolor = "#f5f3f4",
-  #       plot_bgcolor  = "#f5f3f4",
-  #       legend = list(title = list(text = "<b>Tipo</b>")),
-  #       yaxis = list(title = "Valor (MT)"),
-  #       xaxis = list(title = "Tipo")
-  #     )
-  # })
-  # 
-  # 
-  # 
-  # 
-  # # -------------------- Gráfico Poupança com rótulos --------------------
-  # output$grafico_valores_poupanca <- renderPlot({
-  #   df <- filtered_valores() %>%
-  #     group_by(Nome_Sessao) %>%
-  #     summarise(Poupanca_Sessao = sum(Poupanca_Sessao, na.rm = TRUE)) %>%
-  #     mutate(
-  #       Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),  
-  #       Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)         
-  #     )
-  #   
-  #   ggplot(df, aes(x = Nome_Sessao, y = Poupanca_Sessao, group = 1)) +
-  #     geom_line(color = "#69C7BE", size = 1.5) +
-  #     geom_point(size = 3, color = "#69C7BE") +
-  #     geom_text(aes(label = Poupanca_Sessao), vjust = -0.5, size = 5, color = "black") +
-  #     labs(
-  #       title = "Poupança por Sessão",
-  #       x = "Sessão",
-  #       y = "Valor Poupado"
-  #     ) +
-  #     theme_stata() +
-  #     theme(
-  #       axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)  
-  #     )
-  # })
-  # 
-  # 
-  # # -------------------- Gráfico Empréstimos com rótulos --------------------
-  # output$grafico_valores_emprestimo <- renderPlot({
-  #   df <- filtered_valores() %>%
-  #     group_by(Nome_Sessao) %>%
-  #     summarise(Valor_Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE)) %>%
-  #     mutate(
-  #       Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),  
-  #       Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)          
-  #     )
-  #   
-  #   ggplot(df, aes(x = Nome_Sessao, y = Valor_Emprestimo, group = 1)) +
-  #     geom_line(color = "#F37238", size = 1.5) +
-  #     geom_point(size = 3, color = "#F37238") +
-  #     geom_text(aes(label = Valor_Emprestimo), vjust = -0.5, size = 5, color = "black") +
-  #     labs(
-  #       title = "Empréstimos por Sessão",
-  #       x = "Sessão",
-  #       y = "Valor Emprestado"
-  #     ) +
-  #     theme_stata() +
-  #     theme(
-  #       axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)  
-  #     )
-  # })
-  # 
-  # 
-  # # -------------------- Tabela interativa --------------------
-  # # output$tabela_valores_poupanca <- renderDT({
-  # #   # usa a base filtrada
-  # #   df <- filtered_valores()
-  # #   
-  # #   # opcional: organizar colunas importantes primeiro
-  # #   df <- df %>%
-  # #     select(Distrito, Comunidade, Facilitador, Nome_Sessao,
-  # #            Membros_Feminino_Presentes, Membros_Masculino_Presentes,
-  # #            Poupanca_Sessao, Valor_Emprestimo, Divida_Paga, Divida_Acumulada,
-  # #            Poupanca_Acumulada, everything())
-  # #   
-  # #   datatable(df,
-  # #             rownames = FALSE,
-  # #             options = list(
-  # #               pageLength = 10,    # linhas por página
-  # #               scrollX = TRUE,     # scroll horizontal se muitas colunas
-  # #               autoWidth = TRUE,   # ajustar largura automaticamente
-  # #               dom = 'Bfrtip',     # botões de exportação
-  # #               buttons = c('copy', 'csv', 'excel', 'pdf')
-  # #             ),
-  # #             extensions = 'Buttons')
-  # # })
+  filtered_valores <- reactive({
+    df <- Geral_Poupanca
+
+    # Filtro Distrito
+    if (input$filtro_distrito_valores != "Todos") {
+      df <- df %>% filter(Distrito == input$filtro_distrito_valores)
+    }
+
+    # Filtro Comunidade
+    if (input$filtro_comunidade_valores != "Todos") {
+      df <- df %>% filter(Comunidade == input$filtro_comunidade_valores)
+    }
+
+    # Filtro Grupo
+    if (input$filtro_grupo_valores != "Todos") {
+      df <- df %>% filter(Nome_Grupo == input$filtro_grupo_valores)
+    }
+
+    df
+  })
+
+  # -------------------- ATUALIZAR COMUNIDADES --------------------
+  observeEvent(input$filtro_distrito_valores, {
+    comunidades <- Geral_Poupanca %>%
+      filter(if (input$filtro_distrito_valores == "Todos") TRUE else Distrito == input$filtro_distrito_valores) %>%
+      pull(Comunidade) %>% unique()
+
+    updateSelectInput(session, "filtro_comunidade_valores",
+                      choices = c("Todos", comunidades),
+                      selected = "Todos")
+  })
+
+  # -------------------- ATUALIZAR GRUPOS --------------------
+  observeEvent(input$filtro_comunidade_valores, {
+    grupos <- Geral_Poupanca %>%
+      filter(if (input$filtro_comunidade_valores == "Todos") TRUE else Comunidade == input$filtro_comunidade_valores) %>%
+      pull(Nome_Grupo) %>% unique()
+
+    updateSelectInput(session, "filtro_grupo_valores",
+                      choices = c("Todos", grupos),
+                      selected = "Todos")
+  })
+
+  # -------------------- BOXES --------------------
+  output$total_poupanca <- renderText({
+    sum(filtered_valores()$Poupanca_Sessao, na.rm = TRUE)
+  })
+
+  output$total_emprestimo <- renderText({
+    sum(filtered_valores()$Valor_Emprestimo, na.rm = TRUE)
+  })
+
+  output$total_Fundo_Social <- renderText({
+    sum(filtered_valores()$Fundo_Social, na.rm = TRUE)
+  })
+
+  ###################### Graficos Todas Metricas
+
+  # Filtra os dados de acordo com os inputs
+  filtered_valores <- reactive({
+    df <- Geral_Poupanca
+
+    if(input$filtro_distrito_valores != "Todos"){
+      df <- df[df$Distrito == input$filtro_distrito_valores, ]
+    }
+
+    if(input$filtro_comunidade_valores != "Todos"){
+      df <- df[df$Comunidade == input$filtro_comunidade_valores, ]
+    }
+
+    if(input$filtro_grupo_valores != "Todos"){
+      df <- df[df$Nome_Grupo == input$filtro_grupo_valores, ]
+    }
+
+    df
+  })
+
+  # Atualiza opções de grupo dinamicamente quando a comunidade muda
+  observeEvent(input$filtro_comunidade_valores, {
+    grupos <- Geral_Poupanca %>%
+      filter(if (input$filtro_comunidade_valores == "Todos") TRUE else Comunidade == input$filtro_comunidade_valores) %>%
+      pull(Nome_Grupo) %>% unique()
+
+    updateSelectInput(session, "filtro_grupo_valores",
+                      choices = c("Todos", grupos),
+                      selected = "Todos")
+  })
+
+  output$grafico_valores <- renderPlotly({
+
+    df <- filtered_valores() %>%
+      group_by(Distrito) %>%
+      summarise(
+        Poupanca = sum(Poupanca_Sessao, na.rm = TRUE),
+        Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE),
+        Fundo_Social = sum(Fundo_Social, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      tidyr::pivot_longer(
+        cols = c(Poupanca, Emprestimo, Fundo_Social),
+        names_to = "Tipo",
+        values_to = "Valor"
+      ) %>%
+      mutate(
+        Tipo = factor(Tipo, levels = c("Poupanca", "Emprestimo", "Fundo_Social"))
+      )
+
+    if (nrow(df) == 0) {
+      return(
+        plot_ly() %>%
+          layout(
+            title = "Não há dados disponíveis para os filtros selecionados.",
+            paper_bgcolor = "#f5f3f4",
+            plot_bgcolor  = "#f5f3f4",
+            xaxis = list(showticklabels = FALSE),
+            yaxis = list(showticklabels = FALSE)
+          )
+      )
+    }
+
+    distritos <- unique(df$Distrito)
+
+    plots <- lapply(distritos, function(dist) {
+
+      df_dist <- df %>% filter(Distrito == dist)
+
+      plot_ly(
+        data = df_dist,
+        x = ~Tipo,
+        y = ~Valor,
+        type = "bar",
+        marker = list(color = c(
+          "Poupanca" = "#69C7BE",
+          "Emprestimo" = "#F37238",
+          "Fundo_Social" = "#8054A2"
+        )[as.character(df_dist$Tipo)]),
+        text = ~Valor,
+        textposition = "outside"
+      ) %>%
+        layout(
+          # Adiciona o nome do Distrito como annotation no topo do gráfico
+          annotations = list(
+            list(
+              x = 0.5,        # centralizado horizontalmente
+              y = max(df_dist$Valor) * 1.05,
+              text = dist,
+              xref = "paper",
+              yref = "y",
+              showarrow = FALSE,
+              font = list(size = 14, face = "bold"),
+              xanchor = "center"
+            )
+          ),
+          yaxis = list(range = c(0, 500000)),
+          xaxis = list(title = ""),
+          showlegend = FALSE
+        )
+    })
+
+    subplot(
+      plots,
+      nrows = ceiling(length(plots)/2),
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE
+    ) %>%
+      layout(
+        title = list(
+          text = "Valores por Distrito",
+          font = list(size = 16, face = "bold")
+        ),
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        legend = list(title = list(text = "<b>Tipo</b>")),
+        yaxis = list(title = "Valor (MT)"),
+        xaxis = list(title = "Tipo")
+      )
+  })
+
+
+
+
+  # -------------------- Gráfico Poupança com rótulos --------------------
+  output$grafico_valores_poupanca <- renderPlot({
+    df <- filtered_valores() %>%
+      group_by(Nome_Sessao) %>%
+      summarise(Poupanca_Sessao = sum(Poupanca_Sessao, na.rm = TRUE)) %>%
+      mutate(
+        Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),
+        Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)
+      )
+
+    ggplot(df, aes(x = Nome_Sessao, y = Poupanca_Sessao, group = 1)) +
+      geom_line(color = "#69C7BE", size = 1.5) +
+      geom_point(size = 3, color = "#69C7BE") +
+      geom_text(aes(label = Poupanca_Sessao), vjust = -0.5, size = 5, color = "black") +
+      labs(
+        title = "Poupança por Sessão",
+        x = "Sessão",
+        y = "Valor Poupado"
+      ) +
+      theme_stata() +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+      )
+  })
+
+
+  # -------------------- Gráfico Empréstimos com rótulos --------------------
+  output$grafico_valores_emprestimo <- renderPlot({
+    df <- filtered_valores() %>%
+      group_by(Nome_Sessao) %>%
+      summarise(Valor_Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE)) %>%
+      mutate(
+        Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),
+        Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)
+      )
+
+    ggplot(df, aes(x = Nome_Sessao, y = Valor_Emprestimo, group = 1)) +
+      geom_line(color = "#F37238", size = 1.5) +
+      geom_point(size = 3, color = "#F37238") +
+      geom_text(aes(label = Valor_Emprestimo), vjust = -0.5, size = 5, color = "black") +
+      labs(
+        title = "Empréstimos por Sessão",
+        x = "Sessão",
+        y = "Valor Emprestado"
+      ) +
+      theme_stata() +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+      )
+  })
+
+
+  # -------------------- Tabela interativa --------------------
+  output$tabela_valores_poupanca <- renderDT({
+    # usa a base filtrada
+    df <- filtered_valores()
+
+    # opcional: organizar colunas importantes primeiro
+    df <- df %>%
+      select(Distrito, Comunidade, Facilitador, Nome_Sessao,
+             Membros_Feminino_Presentes, Membros_Masculino_Presentes,
+             Poupanca_Sessao, Valor_Emprestimo, Divida_Paga, Divida_Acumulada,
+             Poupanca_Acumulada, everything())
+
+    datatable(df,
+              rownames = FALSE,
+              options = list(
+                pageLength = 10,    # linhas por página
+                scrollX = TRUE,     # scroll horizontal se muitas colunas
+                autoWidth = TRUE,   # ajustar largura automaticamente
+                dom = 'Bfrtip',     # botões de exportação
+                buttons = c('copy', 'csv', 'excel', 'pdf')
+              ),
+              extensions = 'Buttons')
+  })
   # # 
   # ########################## MENTORIA
   # 
@@ -3224,6 +3224,27 @@ server <- function(input, output, session) {
       )
       
       writexl::write_xlsx(Presencas_BPA, "Presencas_BPA.xlsx")
+      
+      
+      Grupos_Poupanca <- RZohoCreator::get_records(
+        "associacaomuva",
+        "monitoria-edm",
+        "REGISTRO_DE_GRUPO_Report",
+        access_token
+      )
+      
+      writexl::write_xlsx(Grupos_Poupanca, "Grupos_Poupanca.xlsx")
+      
+      
+      Geral_Poupanca <- RZohoCreator::get_records(
+        "associacaomuva",
+        "monitoria-edm",
+        "POUPAN_A_Report",
+        access_token
+      )
+      
+      writexl::write_xlsx(Geral_Poupanca, "Geral_Poupanca.xlsx")
+      
       
       Qualidade_Sessoes <- RZohoCreator::get_records(
         "associacaomuva",

@@ -459,60 +459,60 @@ dados_qualidade$Total <- rowSums(dados_qualidade[, 6:ncol(dados_qualidade)], na.
 # 
 # 
 # ######################## LIMPEZA POUPANCA #######################
-# 
-# Grupos_Poupanca <- read_excel("Grupos_Poupanca.xlsx")
-# 
-# Grupos_Poupanca <- Grupos_Poupanca %>%
-#   select(-c(3))
-# 
-# 
+#
+Grupos_Poupanca <- read_excel("Grupos_Poupanca.xlsx")
+
+Grupos_Poupanca <- Grupos_Poupanca %>%
+  select(-c(3))
+
+#
 # # Participantes_Monapo_PI_e_GPEs <- read_excel("Participantes_Monapo_PI e GPEs.xlsx")
 # # Participantes_Ribaue_PI_GPEs <- read_excel("Participantes_Ribaue_ PI_GPEs.xlsx")
-# # 
-# Geral_Poupanca <- read_excel("Geral_Poupanca.xlsx")
-# 
-# Geral_Poupanca <- Geral_Poupanca %>%
-#   select(-c(9, 10, 22))
-# 
-# # Reorganizar colunas na ordem desejada
-# Geral_Poupanca <- Geral_Poupanca %>%
-#   select(
-#     Data, Distrito, Comunidade, Facilitador, Nome_Sessao,Nome_do_Grupo.Nome_do_Grupo, 
-#     Membros_Feminino_Presentes, Membros_Masculino_Presentes,
-#     
-#     # 3. Valores sem acumulado (por sessão)
-#     Poupanca_Sessao, Valor_Emprestimo, Divida_Paga, 
-#     Valor_de_Juros_Pago_na_Sess_o,Fundo_Social, Motivo_Gasto,
-#     Valor_Gasto_de_Fundo_Social, Poupanca_Acumulada, Emprestimo_Acumulado,
-#     Divida_Acumulada, Valor_de_Fundo_Social_Acumulado,
-#     Participacao
-#   )
-# 
+# #
+Geral_Poupanca <- read_excel("Geral_Poupanca.xlsx")
+
+Geral_Poupanca <- Geral_Poupanca %>%
+  select(-c(9, 10, 22))
+
+# Reorganizar colunas na ordem desejada
+Geral_Poupanca <- Geral_Poupanca %>%
+  select(
+    Data, Distrito, Comunidade, Facilitador, Nome_Sessao,Nome_do_Grupo.Nome_do_Grupo,
+    Membros_Feminino_Presentes, Membros_Masculino_Presentes,
+
+    # 3. Valores sem acumulado (por sessão)
+    Poupanca_Sessao, Valor_Emprestimo, Divida_Paga,
+    Valor_de_Juros_Pago_na_Sess_o,Fundo_Social, Motivo_Gasto,
+    Valor_Gasto_de_Fundo_Social, Poupanca_Acumulada, Emprestimo_Acumulado,
+    Divida_Acumulada, Valor_de_Fundo_Social_Acumulado,
+    Participacao
+  )
+
 # # 3. Corrigir formatos das variáveis
-# Geral_Poupanca <- Geral_Poupanca %>%
-#   mutate(
-#     # Data em formato Date
-#     Data = as.Date(Data, format = "%d-%b-%Y"),
-#     
-#     # # Sessão em número
-#     # sessao_num = as.numeric(gsub("[^0-9]", "", nome_sessao)),
-#     
-#     # Variáveis numéricas (garantir que estão em numeric)
-#     Poupanca_Sessao = as.numeric(Poupanca_Sessao),
-#     Fundo_Social = as.numeric(Fundo_Social),
-#     Valor_Emprestimo = as.numeric(Valor_Emprestimo)
-#     # Emprestimo_acumulado = as.numeric(Emprestimo_acumulado),
-#     # Divida_paga = as.numeric(Divida_paga),
-#     # Divida_acumulada = as.numeric(Divida_acumulada),
-#     # Valor_de_fundo_social_acumulado = as.numeric(Valor_de_fundo_social_acumulado),
-#     # Valor_de_juros_pago_na_sess_o = as.numeric(Valor_de_juros_pago_na_sess_o),
-#     # Valor_gasto_de_fundo_social = as.numeric(Valor_gasto_de_fundo_social)
-#   )
-# 
-# Geral_Poupanca <- Geral_Poupanca%>% rename(
-#   Nome_Grupo = Nome_do_Grupo.Nome_do_Grupo
-# )
-# 
+Geral_Poupanca <- Geral_Poupanca %>%
+  mutate(
+    # Data em formato Date
+    Data = as.Date(Data, format = "%d-%b-%Y"),
+
+    # # Sessão em número
+    # sessao_num = as.numeric(gsub("[^0-9]", "", nome_sessao)),
+
+    # Variáveis numéricas (garantir que estão em numeric)
+    Poupanca_Sessao = as.numeric(Poupanca_Sessao),
+    Fundo_Social = as.numeric(Fundo_Social),
+    Valor_Emprestimo = as.numeric(Valor_Emprestimo)
+    # Emprestimo_acumulado = as.numeric(Emprestimo_acumulado),
+    # Divida_paga = as.numeric(Divida_paga),
+    # Divida_acumulada = as.numeric(Divida_acumulada),
+    # Valor_de_fundo_social_acumulado = as.numeric(Valor_de_fundo_social_acumulado),
+    # Valor_de_juros_pago_na_sess_o = as.numeric(Valor_de_juros_pago_na_sess_o),
+    # Valor_gasto_de_fundo_social = as.numeric(Valor_gasto_de_fundo_social)
+  )
+
+Geral_Poupanca <- Geral_Poupanca%>% rename(
+  Nome_Grupo = Nome_do_Grupo.Nome_do_Grupo
+)
+
 # 
 # # ######################### Sessões de Agricultura #################################
 # # 
