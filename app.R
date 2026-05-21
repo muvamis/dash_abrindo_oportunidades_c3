@@ -428,14 +428,14 @@ ui_poupanca <- tabPanel("💰 Poupança",
 
                                        br(),
                                        fluidRow(
-                                         column(12, plotOutput("grafico_valores_poupanca"))
+                                         column(12, plotlyOutput("grafico_valores_poupanca"))
                                        ),
 
                                        br(),
 
                                        # Segundo gráfico em linha completa
                                        fluidRow(
-                                         column(12, plotOutput("grafico_valores_emprestimo"))
+                                         column(12, plotlyOutput("grafico_valores_emprestimo"))
                                        ),
 
                                        br(),
@@ -2784,180 +2784,356 @@ server <- function(input, output, session) {
 
   ###################### Graficos Todas Metricas
 
-  # Filtra os dados de acordo com os inputs
+  # -----------------------------
+  # FILTRO DOS DADOS
+  # -----------------------------
   filtered_valores <- reactive({
+    
     df <- Geral_Poupanca
-
-    if(input$filtro_distrito_valores != "Todos"){
+    
+    if (input$filtro_distrito_valores != "Todos") {
       df <- df[df$Distrito == input$filtro_distrito_valores, ]
     }
-
-    if(input$filtro_comunidade_valores != "Todos"){
+    
+    if (input$filtro_comunidade_valores != "Todos") {
       df <- df[df$Comunidade == input$filtro_comunidade_valores, ]
     }
-
-    if(input$filtro_grupo_valores != "Todos"){
+    
+    if (input$filtro_grupo_valores != "Todos") {
       df <- df[df$Nome_Grupo == input$filtro_grupo_valores, ]
     }
-
+    
     df
   })
-
-  # Atualiza opções de grupo dinamicamente quando a comunidade muda
+  
+  
+  # -----------------------------
+  # ATUALIZA GRUPOS
+  # -----------------------------
   observeEvent(input$filtro_comunidade_valores, {
+    
     grupos <- Geral_Poupanca %>%
-      filter(if (input$filtro_comunidade_valores == "Todos") TRUE else Comunidade == input$filtro_comunidade_valores) %>%
-      pull(Nome_Grupo) %>% unique()
-
-    updateSelectInput(session, "filtro_grupo_valores",
-                      choices = c("Todos", grupos),
-                      selected = "Todos")
+      filter(
+        if (input$filtro_comunidade_valores == "Todos")
+          TRUE
+        else
+          Comunidade == input$filtro_comunidade_valores
+      ) %>%
+      pull(Nome_Grupo) %>%
+      unique()
+    
+    updateSelectInput(
+      session,
+      "filtro_grupo_valores",
+      choices = c("Todos", grupos),
+      selected = "Todos"
+    )
+    
   })
-
+  
+  
+  # -----------------------------
+  # GRÁFICO DE VALORES
+  # -----------------------------
   output$grafico_valores <- renderPlotly({
-
+    
     df <- filtered_valores() %>%
+      
       group_by(Distrito) %>%
+      
       summarise(
-        Poupanca = sum(Poupanca_Sessao, na.rm = TRUE),
-        Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE),
-        Fundo_Social = sum(Fundo_Social, na.rm = TRUE),
+        Poupanca      = sum(Poupanca_Sessao, na.rm = TRUE),
+        Emprestimo    = sum(Valor_Emprestimo, na.rm = TRUE),
+        Fundo_Social  = sum(Fundo_Social, na.rm = TRUE),
         .groups = "drop"
       ) %>%
+      
       tidyr::pivot_longer(
         cols = c(Poupanca, Emprestimo, Fundo_Social),
         names_to = "Tipo",
         values_to = "Valor"
       ) %>%
+      
       mutate(
-        Tipo = factor(Tipo, levels = c("Poupanca", "Emprestimo", "Fundo_Social"))
+        Tipo = factor(
+          Tipo,
+          levels = c(
+            "Poupanca",
+            "Emprestimo",
+            "Fundo_Social"
+          )
+        )
       )
-
+    
+    
+    # -----------------------------
+    # CASO NÃO TENHA DADOS
+    # -----------------------------
     if (nrow(df) == 0) {
+      
       return(
+        
         plot_ly() %>%
+          
           layout(
+            
             title = "Não há dados disponíveis para os filtros selecionados.",
+            
             paper_bgcolor = "#f5f3f4",
             plot_bgcolor  = "#f5f3f4",
+            
             xaxis = list(showticklabels = FALSE),
             yaxis = list(showticklabels = FALSE)
+            
           )
       )
     }
-
+    
+    
+    # -----------------------------
+    # FACETS POR DISTRITO
+    # -----------------------------
     distritos <- unique(df$Distrito)
-
+    
     plots <- lapply(distritos, function(dist) {
-
-      df_dist <- df %>% filter(Distrito == dist)
-
+      
+      df_dist <- df %>%
+        filter(Distrito == dist)
+      
       plot_ly(
+        
         data = df_dist,
+        
         x = ~Tipo,
         y = ~Valor,
+        
         type = "bar",
-        marker = list(color = c(
-          "Poupanca" = "#69C7BE",
-          "Emprestimo" = "#F37238",
-          "Fundo_Social" = "#8054A2"
-        )[as.character(df_dist$Tipo)]),
-        text = ~Valor,
-        textposition = "outside"
+        
+        marker = list(
+          color = c(
+            "Poupanca"     = "#69C7BE",
+            "Emprestimo"   = "#F37238",
+            "Fundo_Social" = "#8054A2"
+          )[as.character(df_dist$Tipo)]
+        ),
+        
+        text = ~format(Valor, big.mark = ","),
+        textposition = "outside",
+        
+        hovertemplate =
+          paste(
+            "<b>Distrito:</b> ", dist,
+            "<br><b>Tipo:</b> %{x}",
+            "<br><b>Valor:</b> %{y:,.0f} MT",
+            "<extra></extra>"
+          )
+        
       ) %>%
+        
         layout(
-          # Adiciona o nome do Distrito como annotation no topo do gráfico
+          
           annotations = list(
+            
             list(
-              x = 0.5,        # centralizado horizontalmente
-              y = max(df_dist$Valor) * 1.05,
-              text = dist,
+              x = 0.5,
+              y = max(df_dist$Valor) * 1.10,
+              
+              text = paste0("<b>", dist, "</b>"),
+              
               xref = "paper",
               yref = "y",
+              
               showarrow = FALSE,
-              font = list(size = 14, face = "bold"),
+              
+              font = list(size = 14),
+              
               xanchor = "center"
             )
+            
           ),
-          yaxis = list(range = c(0, 500000)),
-          xaxis = list(title = ""),
-          showlegend = FALSE
+          
+          paper_bgcolor = "#f5f3f4",
+          plot_bgcolor  = "#f5f3f4",
+          
+          showlegend = FALSE,
+          
+          xaxis = list(
+            title = "",
+            tickfont = list(size = 11)
+          ),
+          
+          yaxis = list(
+            title = "",
+            range = c(0, max(df$Valor) * 1.25),
+            gridcolor = "#d9d9d9",
+            zerolinecolor = "#d9d9d9"
+          )
+          
         )
+      
     })
-
+    
+    
+    # -----------------------------
+    # SUBPLOTS (FACETS)
+    # -----------------------------
     subplot(
+      
       plots,
-      nrows = ceiling(length(plots)/2),
+      
+      nrows = ceiling(length(plots) / 2),
+      
+      margin = 0.08,
+      
       shareX = TRUE,
       shareY = TRUE,
+      
       titleX = TRUE,
       titleY = TRUE
+      
     ) %>%
+      
       layout(
+        
         title = list(
           text = "Valores por Distrito",
-          font = list(size = 16, face = "bold")
+          font = list(size = 16)
         ),
+        
         paper_bgcolor = "#f5f3f4",
         plot_bgcolor  = "#f5f3f4",
-        legend = list(title = list(text = "<b>Tipo</b>")),
-        yaxis = list(title = "Valor (MT)"),
-        xaxis = list(title = "Tipo")
+        
+        legend = list(
+          title = list(text = "<b>Tipo</b>"),
+          orientation = "h",
+          x = 0.30,
+          y = -0.15
+        ),
+        
+        xaxis = list(
+          title = "Tipo"
+        ),
+        
+        yaxis = list(
+          title = "Valor (MT)"
+        )
+        
       )
+    
   })
 
 
 
 
   # -------------------- Gráfico Poupança com rótulos --------------------
-  output$grafico_valores_poupanca <- renderPlot({
+  output$grafico_valores_poupanca <- renderPlotly({
+    
     df <- filtered_valores() %>%
       group_by(Nome_Sessao) %>%
-      summarise(Poupanca_Sessao = sum(Poupanca_Sessao, na.rm = TRUE)) %>%
+      summarise(
+        Poupanca_Sessao = sum(Poupanca_Sessao, na.rm = TRUE)
+      ) %>%
       mutate(
         Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),
         Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)
       )
-
-    ggplot(df, aes(x = Nome_Sessao, y = Poupanca_Sessao, group = 1)) +
-      geom_line(color = "#69C7BE", size = 1.5) +
-      geom_point(size = 3, color = "#69C7BE") +
-      geom_text(aes(label = Poupanca_Sessao), vjust = -0.5, size = 5, color = "black") +
-      labs(
-        title = "Poupança por Sessão",
-        x = "Sessão",
-        y = "Valor Poupado"
-      ) +
-      theme_stata() +
-      theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+    
+    plot_ly(
+      data = df,
+      x = ~Nome_Sessao,
+      y = ~Poupanca_Sessao,
+      type = "scatter",
+      mode = "lines+markers+text",
+      text = ~Poupanca_Sessao,
+      textposition = "top center",
+      line = list(color = "#69C7BE", width = 4),
+      marker = list(size = 8, color = "#69C7BE")
+    ) %>%
+      layout(
+        title = list(
+          text = "Poupança por Sessão",
+          font = list(size = 16)
+        ),
+        
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        
+        xaxis = list(
+          title = "Sessão",
+          tickangle = -45
+        ),
+        
+        yaxis = list(
+          title = "Valor Poupado"
+        ),
+        
+        legend = list(
+          title = list(text = "<b>Poupança</b>")
+        )
       )
+    
   })
 
-
   # -------------------- Gráfico Empréstimos com rótulos --------------------
-  output$grafico_valores_emprestimo <- renderPlot({
+  output$grafico_valores_emprestimo <- renderPlotly({
+    
     df <- filtered_valores() %>%
       group_by(Nome_Sessao) %>%
-      summarise(Valor_Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE)) %>%
+      summarise(
+        Valor_Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE)
+      ) %>%
       mutate(
         Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),
         Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)
       )
-
-    ggplot(df, aes(x = Nome_Sessao, y = Valor_Emprestimo, group = 1)) +
-      geom_line(color = "#F37238", size = 1.5) +
-      geom_point(size = 3, color = "#F37238") +
-      geom_text(aes(label = Valor_Emprestimo), vjust = -0.5, size = 5, color = "black") +
-      labs(
-        title = "Empréstimos por Sessão",
-        x = "Sessão",
-        y = "Valor Emprestado"
-      ) +
-      theme_stata() +
-      theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+    
+    plot_ly(
+      data = df,
+      x = ~Nome_Sessao,
+      y = ~Valor_Emprestimo,
+      type = "scatter",
+      mode = "lines+markers+text",
+      
+      text = ~Valor_Emprestimo,
+      textposition = "top center",
+      
+      line = list(
+        color = "#F37238",
+        width = 4
+      ),
+      
+      marker = list(
+        size = 8,
+        color = "#F37238"
       )
+      
+    ) %>%
+      
+      layout(
+        
+        title = list(
+          text = "Empréstimos por Sessão",
+          font = list(size = 16)
+        ),
+        
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        
+        xaxis = list(
+          title = "Sessão",
+          tickangle = -45
+        ),
+        
+        yaxis = list(
+          title = "Valor Emprestado"
+        ),
+        
+        legend = list(
+          title = list(text = "<b>Empréstimos</b>")
+        )
+        
+      )
+    
   })
 
 
