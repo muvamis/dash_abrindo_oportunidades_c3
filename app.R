@@ -2806,7 +2806,6 @@ server <- function(input, output, session) {
     df
   })
   
-  
   # -----------------------------
   # ATUALIZA GRUPOS
   # -----------------------------
@@ -2814,10 +2813,8 @@ server <- function(input, output, session) {
     
     grupos <- Geral_Poupanca %>%
       filter(
-        if (input$filtro_comunidade_valores == "Todos")
-          TRUE
-        else
-          Comunidade == input$filtro_comunidade_valores
+        if (input$filtro_comunidade_valores == "Todos") TRUE
+        else Comunidade == input$filtro_comunidade_valores
       ) %>%
       pull(Nome_Grupo) %>%
       unique()
@@ -2828,9 +2825,7 @@ server <- function(input, output, session) {
       choices = c("Todos", grupos),
       selected = "Todos"
     )
-    
   })
-  
   
   # -----------------------------
   # GRÁFICO DE VALORES
@@ -2842,53 +2837,35 @@ server <- function(input, output, session) {
       group_by(Distrito) %>%
       
       summarise(
-        Poupanca      = sum(Poupanca_Sessao, na.rm = TRUE),
-        Emprestimo    = sum(Valor_Emprestimo, na.rm = TRUE),
-        Fundo_Social  = sum(Fundo_Social, na.rm = TRUE),
+        Poupanca     = sum(Poupanca_Sessao, na.rm = TRUE),
+        Emprestimo   = sum(Valor_Emprestimo, na.rm = TRUE),
+        Fundo_Social = sum(Fundo_Social, na.rm = TRUE),
         .groups = "drop"
       ) %>%
       
-      tidyr::pivot_longer(
+      pivot_longer(
         cols = c(Poupanca, Emprestimo, Fundo_Social),
         names_to = "Tipo",
         values_to = "Valor"
       ) %>%
       
       mutate(
-        Tipo = factor(
-          Tipo,
-          levels = c(
-            "Poupanca",
-            "Emprestimo",
-            "Fundo_Social"
-          )
-        )
+        Tipo = factor(Tipo, levels = c("Poupanca", "Emprestimo", "Fundo_Social"))
       )
     
-    
     # -----------------------------
-    # CASO NÃO TENHA DADOS
+    # CASO SEM DADOS
     # -----------------------------
     if (nrow(df) == 0) {
-      
       return(
-        
         plot_ly() %>%
-          
           layout(
-            
             title = "Não há dados disponíveis para os filtros selecionados.",
-            
             paper_bgcolor = "#f5f3f4",
-            plot_bgcolor  = "#f5f3f4",
-            
-            xaxis = list(showticklabels = FALSE),
-            yaxis = list(showticklabels = FALSE)
-            
+            plot_bgcolor  = "#f5f3f4"
           )
       )
     }
-    
     
     # -----------------------------
     # FACETS POR DISTRITO
@@ -2897,16 +2874,12 @@ server <- function(input, output, session) {
     
     plots <- lapply(distritos, function(dist) {
       
-      df_dist <- df %>%
-        filter(Distrito == dist)
+      df_dist <- df %>% filter(Distrito == dist)
       
       plot_ly(
-        
         data = df_dist,
-        
         x = ~Tipo,
         y = ~Valor,
-        
         type = "bar",
         
         marker = list(
@@ -2927,102 +2900,77 @@ server <- function(input, output, session) {
             "<br><b>Valor:</b> %{y:,.0f} MT",
             "<extra></extra>"
           )
-        
       ) %>%
         
         layout(
-          
-          annotations = list(
-            
-            list(
-              x = 0.5,
-              y = max(df_dist$Valor) * 1.10,
-              
-              text = paste0("<b>", dist, "</b>"),
-              
-              xref = "paper",
-              yref = "y",
-              
-              showarrow = FALSE,
-              
-              font = list(size = 14),
-              
-              xanchor = "center"
-            )
-            
-          ),
-          
-          paper_bgcolor = "#f5f3f4",
-          plot_bgcolor  = "#f5f3f4",
-          
           showlegend = FALSE,
           
-          xaxis = list(
-            title = "",
-            tickfont = list(size = 11)
-          ),
+          margin = list(t = 30, b = 40),
+          
+          xaxis = list(title = ""),
           
           yaxis = list(
             title = "",
-            range = c(0, max(df$Valor) * 1.25),
-            gridcolor = "#d9d9d9",
-            zerolinecolor = "#d9d9d9"
+            range = c(0, max(df$Valor, na.rm = TRUE) * 1.25),
+            gridcolor = "#d9d9d9"
           )
-          
         )
-      
     })
     
+    # -----------------------------
+    # SUBPLOTS
+    # -----------------------------
+    p <- subplot(
+      plots,
+      nrows = ceiling(length(plots) / 2),
+      margin = 0.06,
+      shareX = TRUE,
+      shareY = TRUE
+    )
     
     # -----------------------------
-    # SUBPLOTS (FACETS)
+    # TÍTULOS DOS DISTRITOS (CORRETO)
     # -----------------------------
-    subplot(
-      
-      plots,
-      
-      nrows = ceiling(length(plots) / 2),
-      
-      margin = 0.08,
-      
-      shareX = TRUE,
-      shareY = TRUE,
-      
-      titleX = TRUE,
-      titleY = TRUE
-      
-    ) %>%
-      
+    n <- length(distritos)
+    
+    annotations <- lapply(seq_along(distritos), function(i) {
+      list(
+        text = paste0("<b>", distritos[i], "</b>"),
+        x = (i - 0.5) / n,
+        y = 1.05,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        font = list(size = 14)
+      )
+    })
+    
+    p %>%
       layout(
-        
         title = list(
           text = "Valores por Distrito",
+          x = 0.5,
           font = list(size = 16)
         ),
+        
+        annotations = annotations,
         
         paper_bgcolor = "#f5f3f4",
         plot_bgcolor  = "#f5f3f4",
         
+        margin = list(t = 100),
+        
         legend = list(
           title = list(text = "<b>Tipo</b>"),
           orientation = "h",
-          x = 0.30,
+          x = 0.3,
           y = -0.15
         ),
         
-        xaxis = list(
-          title = "Tipo"
-        ),
-        
-        yaxis = list(
-          title = "Valor (MT)"
-        )
-        
+        xaxis = list(title = "Tipo"),
+        yaxis = list(title = "Valor (MT)")
       )
-    
   })
-
-
 
 
   # -------------------- Gráfico Poupança com rótulos --------------------
