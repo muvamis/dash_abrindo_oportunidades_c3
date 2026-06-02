@@ -2117,6 +2117,27 @@ server <- function(input, output, session) {
   
   # ############## Presencas BPA #############
   # 
+  
+  
+  observeEvent(input$distrito_presencas, {
+    
+    comunidades <- Presencas_BPA %>%
+      filter(
+        input$distrito_presencas == "Todos" |
+          Distrito == input$distrito_presencas
+      ) %>%
+      pull(Comunidade) %>%
+      unique() %>%
+      sort()
+    
+    updateSelectInput(
+      session,
+      "comunidade_presencas",
+      choices = c("Todos", comunidades),
+      selected = "Todos"
+    )
+    
+  })
   output$grafic <- renderPlotly({
 
     dados_filtrados <- Presencas_BPA %>%
