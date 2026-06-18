@@ -3082,69 +3082,59 @@ server <- function(input, output, session) {
         .groups = "drop"
       ) %>%
       mutate(
-        Numero_Sessao = as.numeric(stringr::str_extract(Nome_Sessao, "\\d+"))
+        Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao))
       ) %>%
       arrange(Numero_Sessao)
     
-    df$Nome_Sessao <- factor(
-      df$Nome_Sessao,
-      levels = df$Nome_Sessao
-    )
+    df$Nome_Sessao <- factor(df$Nome_Sessao, levels = df$Nome_Sessao)
     
-    plot_ly(
+    desloc <- max(df$Poupanca_Sessao, na.rm = TRUE) * 0.08
+    
+    g <- ggplot(df, aes(x = Nome_Sessao, y = Poupanca_Sessao, group = 1)) +
       
-      data = df,
+      geom_area(fill = "#69C7BE", alpha = 0.15) +
       
-      x = ~Nome_Sessao,
-      y = ~Poupanca_Sessao,
+      geom_line(color = "#69C7BE", linewidth = 1.3) +
       
-      type = "scatter",
-      mode = "lines+markers+text",
-      
-      text = ~scales::comma(Poupanca_Sessao),
-      textposition = "top center",
-      
-      line = list(
+      geom_point(
         color = "#69C7BE",
-        width = 4
-      ),
+        fill = "white",
+        shape = 21,
+        size = 4,
+        stroke = 1.2
+      ) +
       
-      marker = list(
+      geom_text(
+        aes(
+          y = Poupanca_Sessao + desloc,
+          label = scales::comma(Poupanca_Sessao)
+        ),
         color = "#69C7BE",
-        size = 8
-      ),
+        fontface = "bold",
+        size = 4
+      ) +
       
-      hovertemplate =
-        paste(
-          "<b>%{x}</b><br>",
-          "Poupança: %{y:,.0f}",
-          "<extra></extra>"
-        )
+      labs(x = "", y = "Poupança") +
       
-    ) %>%
+      scale_y_continuous(
+        labels = scales::comma,
+        expand = expansion(mult = c(0.05, 0.25))
+      ) +
       
+      theme_minimal(base_size = 14) +
+      
+      theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_line(color = "#E0E0E0"),
+        axis.text = element_text(color = "#333333"),
+        axis.title = element_text(face = "bold")
+      )
+    
+    ggplotly(g, tooltip = "text") %>%
       layout(
-        
-        title = list(
-          text = "Poupança por Sessão",
-          font = list(size = 16)
-        ),
-        
         paper_bgcolor = "#f5f3f4",
-        plot_bgcolor  = "#f5f3f4",
-        
-        xaxis = list(
-          title = "Sessão",
-          tickangle = -45
-        ),
-        
-        yaxis = list(
-          title = "Valor Poupado",
-          separatethousands = TRUE
-        ),
-        
-        showlegend = FALSE
-        
+        plot_bgcolor  = "#f5f3f4"
       )
     
   })
@@ -3163,56 +3153,55 @@ server <- function(input, output, session) {
       ) %>%
       arrange(Numero_Sessao)
     
-    df$Nome_Sessao <- factor(
-      df$Nome_Sessao,
-      levels = df$Nome_Sessao
-    )
+    df$Nome_Sessao <- factor(df$Nome_Sessao, levels = df$Nome_Sessao)
     
-    plot_ly(
-      data = df,
-      x = ~Nome_Sessao,
-      y = ~Valor_Emprestimo,
-      type = "scatter",
-      mode = "lines+markers+text",
+    desloc <- max(df$Valor_Emprestimo, na.rm = TRUE) * 0.08
+    
+    g <- ggplot(df, aes(x = Nome_Sessao, y = Valor_Emprestimo, group = 1)) +
       
-      text = ~Valor_Emprestimo,
-      textposition = "top center",
+      geom_area(fill = "#F37238", alpha = 0.15) +
       
-      line = list(
+      geom_line(color = "#F37238", linewidth = 1.3) +
+      
+      geom_point(
         color = "#F37238",
-        width = 4
-      ),
+        fill = "white",
+        shape = 21,
+        size = 4,
+        stroke = 1.2
+      ) +
       
-      marker = list(
-        size = 8,
-        color = "#F37238"
+      geom_text(
+        aes(
+          y = Valor_Emprestimo + desloc,
+          label = scales::comma(Valor_Emprestimo)
+        ),
+        color = "#F37238",
+        fontface = "bold",
+        size = 4
+      ) +
+      
+      labs(x = "", y = "Empréstimos") +
+      
+      scale_y_continuous(
+        labels = scales::comma,
+        expand = expansion(mult = c(0.05, 0.25))
+      ) +
+      
+      theme_minimal(base_size = 14) +
+      
+      theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_line(color = "#E0E0E0"),
+        axis.text = element_text(color = "#333333"),
+        axis.title = element_text(face = "bold")
       )
-      
-    ) %>%
-      
+    
+    ggplotly(g, tooltip = "text") %>%
       layout(
-        
-        title = list(
-          text = "Empréstimos por Sessão",
-          font = list(size = 16)
-        ),
-        
         paper_bgcolor = "#f5f3f4",
-        plot_bgcolor  = "#f5f3f4",
-        
-        xaxis = list(
-          title = "Sessão",
-          tickangle = -45
-        ),
-        
-        yaxis = list(
-          title = "Valor Emprestado"
-        ),
-        
-        legend = list(
-          title = list(text = "<b>Empréstimos</b>")
-        )
-        
+        plot_bgcolor  = "#f5f3f4"
       )
     
   })
