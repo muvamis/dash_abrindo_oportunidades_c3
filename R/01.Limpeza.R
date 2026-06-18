@@ -311,27 +311,33 @@ dados_qualidade$Total <- rowSums(dados_qualidade[, 6:ncol(dados_qualidade)], na.
 # 
 # # write.xlsx(Presencas_PI, "Presencas_Abrindo_Oport.xlsx")
 # 
-# Beneficiario_Indirectos <- read_excel("BENEFICIARIOS INDIRECTOS Report.xlsx") 
-# 
-# # Beneficiario_Indirectos <- Beneficiario_Indirectos %>%
-# #   select(-c(3, 4, 5, 6, 8))
+######################## BENEFICIARIOS INDIRETOS
+
+Beneficiarios_Indirectos <- read_excel("BENEFICIARIOS_INDIRECTOS_Report.xlsx")
+
+
 # # 
-# # 
-# Beneficiario_Indirectos <- Beneficiario_Indirectos %>% rename(
-#   Beneficiarios_Envolvidos = `Depois do seu envolvimento com o projecto Abrindo Oportunidades, algum jovem do seu agregado familiar ou da comunidade começou a ajudar/trabalhar ou iniciou uma nova actividade produtiva?`,
-#   Outros_Beneficios_comentarios = `Descreva brevemente qualquer outro benefício ou história relevante envolvendo jovens indiretos`
-# )
-# 
-# 
-# 
 # Beneficiario_Indirectos <- Beneficiario_Indirectos %>%
-#   mutate(
-#     Data_Registo = as.Date(`Data de Registo`),
-#     Mes_Referencia = case_when(
-#       day(Data_Registo) <= 15 ~ format(Data_Registo %m-% months(1), "%Y-%m"),  # dias 1 a 7 -> mês anterior
-#       TRUE ~ format(Data_Registo, "%Y-%m")  # resto das datas -> mês atual
-#     )
-#   )
+#   select(-c(3, 4, 5, 6, 8))
+# 
+# # # 
+Beneficiarios_Indirectos <- Beneficiarios_Indirectos %>% rename(
+Beneficiarios_Envolvidos = `Depois do seu envolvimento com o projecto Abrindo Oportunidades, algum jovem do seu agregado familiar ou da comunidade começou a ajudar/trabalhar ou iniciou uma nova actividade produtiva?`,
+  Data_Registo = `Data de Registo`,
+  Nome_Participante = `Participante Direto`
+  
+)
+
+# 
+# 
+Beneficiarios_Indirectos <- Beneficiarios_Indirectos %>%
+  mutate(
+    Data_Registo = as.Date(Data_Registo),
+    Mes_Referencia = case_when(
+      day(Data_Registo) <= 15 ~ format(Data_Registo %m-% months(1), "%Y-%m"),  # dias 1 a 7 -> mês anterior
+      TRUE ~ format(Data_Registo, "%Y-%m")  # resto das datas -> mês atual
+    )
+  )
 # 
 # duplicados <- Beneficiario_Indirectos[duplicated(Beneficiario_Indirectos), ]
 # # 

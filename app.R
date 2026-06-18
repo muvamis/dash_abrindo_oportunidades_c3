@@ -219,38 +219,38 @@ ui_Qualidade <- tabPanel("🔍 Avaliação_PI",
                                       h4("Tabela de Avaliação das Sessões"),
                                       DTOutput("tabela_qualidade")
                                     )
-                           )
+                           ),
                            
-                           # tabPanel("Beneficiários_Indirectos",
-                           #          fluidPage(
-                           #            h3("Resumo dos Beneficiários Indiretos"),
-                           #            
-                           #            # Filtro por Distrito
-                           #            selectInput(
-                           #              inputId = "distrito_facet",
-                           #              label = "Escolha o Distrito:",
-                           #              choices = c("Todos", unique(Beneficiario_Indirectos$Distrito)),
-                           #              selected = "Todos"
-                           #            ),
-                           #            
-                           #            # Linha com gráfico e tabela resumo
-                           #            fluidRow(
-                           #              downloadButton(
-                           #                outputId = "download_excel_benef",
-                           #                label = "Baixar dados"
-                           #              ),
-                           #              column(6, DTOutput("resumo_benef")),
-                           #              column(6, plotlyOutput("grafico_benef"))
-                           #            ),
-                           #            
-                           #            h3("Tabela Completa"),
-                           #            downloadButton(
-                           #              outputId = "download_beneficiarios",
-                           #              label = "Baixar tabela"
-                           #            ),
-                           #            DTOutput("beneficiarios_output")
-                           #          )
-                           # )
+                           tabPanel("Beneficiários_Indirectos",
+                                    fluidPage(
+                                      h3("Resumo dos Beneficiários Indiretos"),
+
+                                      # Filtro por Distrito
+                                      selectInput(
+                                        inputId = "distrito_facet",
+                                        label = "Escolha o Distrito:",
+                                        choices = c("Todos", unique(Beneficiarios_Indirectos$Distrito)),
+                                        selected = "Todos"
+                                      ),
+
+                                      # Linha com gráfico e tabela resumo
+                                      fluidRow(
+                                        downloadButton(
+                                          outputId = "download_excel_benef",
+                                          label = "Baixar dados"
+                                        ),
+                                        column(6, DTOutput("resumo_benef")),
+                                        column(6, plotlyOutput("grafico_benef"))
+                                      ),
+
+                                      h3("Tabela Completa"),
+                                      downloadButton(
+                                        outputId = "download_beneficiarios",
+                                        label = "Baixar tabela"
+                                      ),
+                                      DTOutput("beneficiarios_output")
+                                    )
+                           )
                            
                          )
 )
@@ -2410,199 +2410,199 @@ server <- function(input, output, session) {
   
   # ################ TABELA BENEFICIARIOS INDIRECTOS #############
   # 
-  # # Criar versão filtrada reativa
-  # beneficiarios_filtrados <- reactive({
-  #   df <- Beneficiario_Indirectos
-  #   
-  #   # Mantém apenas Idade >= 18
-  #   df <- df %>% filter(Idade >= 18)
-  #   
-  #   # Criar FaixaEtaria
-  #   df <- df %>%
-  #     mutate(FaixaEtaria = case_when(
-  #       Idade >= 18 & Idade <= 35 ~ "Youth",
-  #       Idade > 35 ~ "Non-Youth"
-  #     ))
-  #   
-  #   # Aplicar filtro por Distrito
-  #   if(input$distrito_facet != "Todos"){
-  #     df <- df %>% filter(Distrito == input$distrito_facet)
-  #   }
-  #   
-  #   df
-  # })
-  # 
-  # output$resumo_benef <- renderDataTable({
-  #   df <- beneficiarios_filtrados()
-  #   
-  #   benef_resumo <- df %>%
-  #     group_by(Mes_Referencia, Distrito, Sexo, FaixaEtaria) %>%
-  #     summarise(Total = n(), .groups = "drop")
-  #   
-  #   total_geral <- benef_resumo %>%
-  #     summarise(Distrito = "Total Geral", Sexo = "", FaixaEtaria = "", Total = sum(Total))
-  #   
-  #   benef_resumo_final <- bind_rows(benef_resumo, total_geral)
-  #   
-  #   datatable(benef_resumo_final,
-  #             options = list(pageLength = 10, dom = 'lfrtip'),
-  #             rownames = FALSE)
-  # })
-  # 
-  # output$grafico_benef <- renderPlotly({
-  #   
-  #   df <- beneficiarios_filtrados()
-  #   
-  #   # -------------------- Caso sem dados --------------------
-  #   if (nrow(df) == 0) {
-  #     return(
-  #       plot_ly() %>%
-  #         layout(
-  #           title = "Não há dados disponíveis para os filtros selecionados.",
-  #           paper_bgcolor = "#f5f3f4",
-  #           plot_bgcolor  = "#f5f3f4",
-  #           xaxis = list(showticklabels = FALSE),
-  #           yaxis = list(showticklabels = FALSE)
-  #         )
-  #     )
-  #   }
-  #   
-  #   # -------------------- Download Excel --------------------
-  #   output$download_excel_benef <- downloadHandler(
-  #     filename = function() {
-  #       paste0("Beneficiarios_Resumo_", Sys.Date(), ".xlsx")
-  #     },
-  #     content = function(file) {
-  #       
-  #       benef_resumo <- df %>%
-  #         group_by(Mes_Referencia, Distrito, Sexo, FaixaEtaria) %>%
-  #         summarise(Total = n(), .groups = "drop")
-  #       
-  #       total_geral <- benef_resumo %>%
-  #         summarise(
-  #           Mes_Referencia = "",
-  #           Distrito = "Total Geral",
-  #           Sexo = "",
-  #           FaixaEtaria = "",
-  #           Total = sum(Total)
-  #         )
-  #       
-  #       benef_resumo_final <- bind_rows(benef_resumo, total_geral)
-  #       
-  #       openxlsx::write.xlsx(benef_resumo_final, file)
-  #     }
-  #   )
-  #   
-  #   # -------------------- Dados para o gráfico --------------------
-  #   benef_resumo_plot <- df %>%
-  #     group_by(Distrito, Sexo, FaixaEtaria) %>%
-  #     summarise(Total = n(), .groups = "drop") %>%
-  #     group_by(Distrito) %>%
-  #     mutate(
-  #       Percent = Total / sum(Total) * 100,
-  #       Label = paste0(Total, " (", round(Percent, 1), "%)")
-  #     ) %>%
-  #     ungroup()
-  #   
-  #   distritos <- unique(benef_resumo_plot$Distrito)
-  #   
-  #   # -------------------- Criar gráficos individuais --------------------
-  #   plots <- lapply(seq_along(distritos), function(i) {
-  #     
-  #     dist <- distritos[i]
-  #     df_dist <- benef_resumo_plot %>% filter(Distrito == dist)
-  #     
-  #     plot_ly(
-  #       data = df_dist,
-  #       x = ~FaixaEtaria,
-  #       y = ~Total,
-  #       color = ~Sexo,
-  #       colors = c(
-  #         "Feminino" = "#8054A2", "Masculino" = "#F37238"
-  #       ),
-  #       type = "bar",
-  #       text = ~Label,
-  #       textposition = "outside",
-  #       showlegend = (i == 1)  # legenda só no primeiro
-  #     ) %>%
-  #       layout(
-  #         xaxis = list(title = ""),
-  #         yaxis = list(range = c(0, max(benef_resumo_plot$Total) * 1.2))
-  #       )
-  #   })
-  #   
-  #   # -------------------- Layout dos facets --------------------
-  #   n_plots <- length(distritos)
-  #   n_cols  <- 2
-  #   n_rows  <- ceiling(n_plots / n_cols)
-  #   
-  #   # -------------------- Annotations (Distritos) --------------------
-  #   annotations <- lapply(seq_along(distritos), function(i) {
-  #     
-  #     list(
-  #       text = paste0("<b>Distrito: </b>", distritos[i]),
-  #       x = ((i - 1) %% n_cols) / n_cols + (1 / (2 * n_cols)),
-  #       y = 1 - (floor((i - 1) / n_cols) / n_rows),
-  #       xref = "paper",
-  #       yref = "paper",
-  #       showarrow = FALSE,
-  #       font = list(size = 13)
-  #     )
-  #   })
-  #   
-  #   # -------------------- Subplot final --------------------
-  #   subplot(
-  #     plots,
-  #     nrows = n_rows,
-  #     shareX = TRUE,
-  #     shareY = TRUE
-  #   ) %>%
-  #     layout(
-  #       title = list(
-  #         text = "<b>Beneficiários Indiretos por Distrito</b>",
-  #         font = list(size = 16)
-  #       ),
-  #       annotations = annotations,
-  #       legend = list(
-  #         title = list(text = "<b>Sexo</b>"),
-  #         orientation = "h",
-  #         x = 0.5,
-  #         xanchor = "center",
-  #         y = -0.18
-  #       ),
-  #       paper_bgcolor = "#f5f3f4",
-  #       plot_bgcolor  = "#f5f3f4",
-  #       yaxis = list(title = "Total de Beneficiários"),
-  #       xaxis = list(title = "")
-  #     )
-  # })
-  # 
-  # 
-  # 
-  # # Tabela completa
-  # output$beneficiarios_output <- renderDT({
-  #   df <- beneficiarios_filtrados()
-  #   
-  #   # Remove colunas indesejadas
-  #   df_para_tabela <- df %>% select(-`Data de Registo`, -Data_Registo, -Mes_Referencia)
-  #   
-  #   datatable(df_para_tabela, options = list(pageLength = 10))
-  # })
-  # 
-  # output$download_beneficiarios <- downloadHandler(
-  #   filename = function() {
-  #     paste0("tabela_beneficiarios_", Sys.Date(), ".xlsx")
-  #   },
-  #   content = function(file) {
-  #     
-  #     df <- beneficiarios_filtrados()
-  #     
-  #     df_para_excel <- df %>% 
-  #       select(-`Data de Registo`, -Data_Registo, -Mes_Referencia)
-  #     
-  #     writexl::write_xlsx(df_para_excel, file)
-  #   }
-  # )
+  # Criar versão filtrada reativa
+  beneficiarios_filtrados <- reactive({
+    df <- Beneficiarios_Indirectos
+
+    # Mantém apenas Idade >= 18
+    df <- df %>% filter(Idade >= 18)
+
+    # Criar FaixaEtaria
+    df <- df %>%
+      mutate(FaixaEtaria = case_when(
+        Idade >= 18 & Idade <= 35 ~ "Youth",
+        Idade > 35 ~ "Non-Youth"
+      ))
+
+    # Aplicar filtro por Distrito
+    if(input$distrito_facet != "Todos"){
+      df <- df %>% filter(Distrito == input$distrito_facet)
+    }
+
+    df
+  })
+
+  output$resumo_benef <- renderDataTable({
+    df <- beneficiarios_filtrados()
+
+    benef_resumo <- df %>%
+      group_by(Mes_Referencia, Distrito, Sexo, FaixaEtaria) %>%
+      summarise(Total = n(), .groups = "drop")
+
+    total_geral <- benef_resumo %>%
+      summarise(Distrito = "Total Geral", Sexo = "", FaixaEtaria = "", Total = sum(Total))
+
+    benef_resumo_final <- bind_rows(benef_resumo, total_geral)
+
+    datatable(benef_resumo_final,
+              options = list(pageLength = 10, dom = 'lfrtip'),
+              rownames = FALSE)
+  })
+
+  output$grafico_benef <- renderPlotly({
+
+    df <- beneficiarios_filtrados()
+
+    # -------------------- Caso sem dados --------------------
+    if (nrow(df) == 0) {
+      return(
+        plot_ly() %>%
+          layout(
+            title = "Não há dados disponíveis para os filtros selecionados.",
+            paper_bgcolor = "#f5f3f4",
+            plot_bgcolor  = "#f5f3f4",
+            xaxis = list(showticklabels = FALSE),
+            yaxis = list(showticklabels = FALSE)
+          )
+      )
+    }
+
+    # -------------------- Download Excel --------------------
+    output$download_excel_benef <- downloadHandler(
+      filename = function() {
+        paste0("Beneficiarios_Resumo_", Sys.Date(), ".xlsx")
+      },
+      content = function(file) {
+
+        benef_resumo <- df %>%
+          group_by(Mes_Referencia, Distrito, Sexo, FaixaEtaria) %>%
+          summarise(Total = n(), .groups = "drop")
+
+        total_geral <- benef_resumo %>%
+          summarise(
+            Mes_Referencia = "",
+            Distrito = "Total Geral",
+            Sexo = "",
+            FaixaEtaria = "",
+            Total = sum(Total)
+          )
+
+        benef_resumo_final <- bind_rows(benef_resumo, total_geral)
+
+        openxlsx::write.xlsx(benef_resumo_final, file)
+      }
+    )
+
+    # -------------------- Dados para o gráfico --------------------
+    benef_resumo_plot <- df %>%
+      group_by(Distrito, Sexo, FaixaEtaria) %>%
+      summarise(Total = n(), .groups = "drop") %>%
+      group_by(Distrito) %>%
+      mutate(
+        Percent = Total / sum(Total) * 100,
+        Label = paste0(Total, " (", round(Percent, 1), "%)")
+      ) %>%
+      ungroup()
+
+    distritos <- unique(benef_resumo_plot$Distrito)
+
+    # -------------------- Criar gráficos individuais --------------------
+    plots <- lapply(seq_along(distritos), function(i) {
+
+      dist <- distritos[i]
+      df_dist <- benef_resumo_plot %>% filter(Distrito == dist)
+
+      plot_ly(
+        data = df_dist,
+        x = ~FaixaEtaria,
+        y = ~Total,
+        color = ~Sexo,
+        colors = c(
+          "Feminino" = "#8054A2", "Masculino" = "#F37238"
+        ),
+        type = "bar",
+        text = ~Label,
+        textposition = "outside",
+        showlegend = (i == 1)  # legenda só no primeiro
+      ) %>%
+        layout(
+          xaxis = list(title = ""),
+          yaxis = list(range = c(0, max(benef_resumo_plot$Total) * 1.2))
+        )
+    })
+
+    # -------------------- Layout dos facets --------------------
+    n_plots <- length(distritos)
+    n_cols  <- 2
+    n_rows  <- ceiling(n_plots / n_cols)
+
+    # -------------------- Annotations (Distritos) --------------------
+    annotations <- lapply(seq_along(distritos), function(i) {
+
+      list(
+        text = paste0("<b>Distrito: </b>", distritos[i]),
+        x = ((i - 1) %% n_cols) / n_cols + (1 / (2 * n_cols)),
+        y = 1 - (floor((i - 1) / n_cols) / n_rows),
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        font = list(size = 13)
+      )
+    })
+
+    # -------------------- Subplot final --------------------
+    subplot(
+      plots,
+      nrows = n_rows,
+      shareX = TRUE,
+      shareY = TRUE
+    ) %>%
+      layout(
+        title = list(
+          text = "<b>Beneficiários Indiretos por Distrito</b>",
+          font = list(size = 16)
+        ),
+        annotations = annotations,
+        legend = list(
+          title = list(text = "<b>Sexo</b>"),
+          orientation = "h",
+          x = 0.5,
+          xanchor = "center",
+          y = -0.18
+        ),
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        yaxis = list(title = "Total de Beneficiários"),
+        xaxis = list(title = "")
+      )
+  })
+
+
+
+  # Tabela completa
+  output$beneficiarios_output <- renderDT({
+    df <- beneficiarios_filtrados()
+
+    # Remove colunas indesejadas
+    df_para_tabela <- df %>% select(-Data_Registo, -Mes_Referencia)
+
+    datatable(df_para_tabela, options = list(pageLength = 10))
+  })
+
+  output$download_beneficiarios <- downloadHandler(
+    filename = function() {
+      paste0("tabela_beneficiarios_", Sys.Date(), ".xlsx")
+    },
+    content = function(file) {
+
+      df <- beneficiarios_filtrados()
+
+      df_para_excel <- df %>%
+        select(-Data_Registo, -Mes_Referencia)
+
+      writexl::write_xlsx(df_para_excel, file)
+    }
+  )
   # 
   # ################# PAGINA POUPANCA
   # 
@@ -2613,8 +2613,6 @@ server <- function(input, output, session) {
       Total_Membros_grupo = parse_number(as.character(Total_Membros_grupo))
     )
 
-  # Atualiza as comunidades conforme o distrito
-  # 1️⃣ Atualiza Comunidades conforme o Distrito
   observe({
     req(input$filtro_poupanca)
 
@@ -2631,7 +2629,6 @@ server <- function(input, output, session) {
                       selected = "Todos")
   })
 
-  # 2️⃣ Atualiza Grupos conforme a Comunidade selecionada
   observe({
     req(input$filtro_comunidade)
 
@@ -2652,7 +2649,6 @@ server <- function(input, output, session) {
   })
 
 
-  # Base filtrada
   filtered_poupanca <- reactive({
     df <- Grupos_Poupanca
     if (input$filtro_poupanca != "Todos") {
@@ -2995,30 +2991,140 @@ server <- function(input, output, session) {
 
 
   # -------------------- Gráfico Poupança com rótulos --------------------
+ 
+  observeEvent(input$filtro_distrito_valores, {
+    
+    df <- Geral_Poupanca
+    
+    if (input$filtro_distrito_valores != "Todos") {
+      df <- df %>%
+        filter(Distrito == input$filtro_distrito_valores)
+    }
+    
+    updateSelectInput(
+      session,
+      "filtro_comunidade_valores",
+      choices = c("Todos", sort(unique(df$Comunidade))),
+      selected = "Todos"
+    )
+    
+    updateSelectInput(
+      session,
+      "filtro_grupo_valores",
+      choices = "Todos",
+      selected = "Todos"
+    )
+    
+  })
+  
+  observeEvent(
+    c(input$filtro_distrito_valores,
+      input$filtro_comunidade_valores),
+    {
+      
+      df <- Geral_Poupanca
+      
+      if (input$filtro_distrito_valores != "Todos") {
+        df <- df %>%
+          filter(Distrito == input$filtro_distrito_valores)
+      }
+      
+      if (input$filtro_comunidade_valores != "Todos") {
+        df <- df %>%
+          filter(Comunidade == input$filtro_comunidade_valores)
+      }
+      
+      updateSelectInput(
+        session,
+        "filtro_grupo_valores",
+        choices = c("Todos", sort(unique(df$Nome_Grupo))),
+        selected = "Todos"
+      )
+      
+    }
+  )
+  
+  filtered_valores <- reactive({
+    
+    df <- Geral_Poupanca
+    
+    if (!is.null(input$filtro_distrito_valores) &&
+        input$filtro_distrito_valores != "Todos") {
+      
+      df <- df %>%
+        filter(Distrito == input$filtro_distrito_valores)
+    }
+    
+    if (!is.null(input$filtro_comunidade_valores) &&
+        input$filtro_comunidade_valores != "Todos") {
+      
+      df <- df %>%
+        filter(Comunidade == input$filtro_comunidade_valores)
+    }
+    
+    if (!is.null(input$filtro_grupo_valores) &&
+        input$filtro_grupo_valores != "Todos") {
+      
+      df <- df %>%
+        filter(Nome_Grupo == input$filtro_grupo_valores)
+    }
+    
+    df
+    
+  })
+  
   output$grafico_valores_poupanca <- renderPlotly({
     
     df <- filtered_valores() %>%
       group_by(Nome_Sessao) %>%
       summarise(
-        Poupanca_Sessao = sum(Poupanca_Sessao, na.rm = TRUE)
+        Poupanca_Sessao = sum(Poupanca_Sessao, na.rm = TRUE),
+        .groups = "drop"
       ) %>%
       mutate(
-        Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),
-        Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)
-      )
+        Numero_Sessao = as.numeric(stringr::str_extract(Nome_Sessao, "\\d+"))
+      ) %>%
+      arrange(Numero_Sessao)
+    
+    df$Nome_Sessao <- factor(
+      df$Nome_Sessao,
+      levels = df$Nome_Sessao
+    )
     
     plot_ly(
+      
       data = df,
+      
       x = ~Nome_Sessao,
       y = ~Poupanca_Sessao,
+      
       type = "scatter",
       mode = "lines+markers+text",
-      text = ~Poupanca_Sessao,
+      
+      text = ~scales::comma(Poupanca_Sessao),
       textposition = "top center",
-      line = list(color = "#69C7BE", width = 4),
-      marker = list(size = 8, color = "#69C7BE")
+      
+      line = list(
+        color = "#69C7BE",
+        width = 4
+      ),
+      
+      marker = list(
+        color = "#69C7BE",
+        size = 8
+      ),
+      
+      hovertemplate =
+        paste(
+          "<b>%{x}</b><br>",
+          "Poupança: %{y:,.0f}",
+          "<extra></extra>"
+        )
+      
     ) %>%
+      
       layout(
+        
         title = list(
           text = "Poupança por Sessão",
           font = list(size = 16)
@@ -3033,12 +3139,12 @@ server <- function(input, output, session) {
         ),
         
         yaxis = list(
-          title = "Valor Poupado"
+          title = "Valor Poupado",
+          separatethousands = TRUE
         ),
         
-        legend = list(
-          title = list(text = "<b>Poupança</b>")
-        )
+        showlegend = FALSE
+        
       )
     
   })
@@ -3049,12 +3155,18 @@ server <- function(input, output, session) {
     df <- filtered_valores() %>%
       group_by(Nome_Sessao) %>%
       summarise(
-        Valor_Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE)
+        Valor_Emprestimo = sum(Valor_Emprestimo, na.rm = TRUE),
+        .groups = "drop"
       ) %>%
       mutate(
-        Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao)),
-        Nome_Sessao = reorder(Nome_Sessao, Numero_Sessao)
-      )
+        Numero_Sessao = as.numeric(gsub("\\D", "", Nome_Sessao))
+      ) %>%
+      arrange(Numero_Sessao)
+    
+    df$Nome_Sessao <- factor(
+      df$Nome_Sessao,
+      levels = df$Nome_Sessao
+    )
     
     plot_ly(
       data = df,
@@ -3104,8 +3216,6 @@ server <- function(input, output, session) {
       )
     
   })
-
-
   # -------------------- Tabela interativa --------------------
   output$tabela_valores_poupanca <- renderDT({
     # usa a base filtrada
@@ -3399,6 +3509,15 @@ server <- function(input, output, session) {
       )
       
       writexl::write_xlsx(Qualidade_Sessoes, "Qualidade_Sessoes.xlsx")
+      
+      Beneficiarios_Indiretos <- RZohoCreator::get_records(
+        "associacaomuva",
+        "monitoria-edm",
+        "Beneficiario_Indirectos_Report",
+        access_token
+      )
+      
+      writexl::write_xlsx(Beneficiarios_Indiretos, "Beneficiarios_Indiretos.xlsx")
       
       TRUE
       
