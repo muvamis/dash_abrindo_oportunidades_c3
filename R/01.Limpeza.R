@@ -191,6 +191,7 @@ Ribaue_Perfil_Nao_Enco <- Presencas_Ribaue %>%
     by = c("Nome_Participante", "Comunidade")
   )
 
+ # write_xlsx(Ribaue_Perfil_Nao_Enco, "Ribaue_Perfil_Nao_Enco.xlsx")
 
 Ribaue_duplicados <- Presencas_Ribaue_Perfil[duplicated(Presencas_Ribaue_Perfil), ]
 #

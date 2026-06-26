@@ -2154,6 +2154,12 @@ server <- function(input, output, session) {
             paper_bgcolor = "#f5f3f4",
             plot_bgcolor  = "#f5f3f4",
             xaxis = list(showticklabels = FALSE),
+            axis.text.x = element_text(
+              angle = 45,
+              hjust = 1,
+              vjust = 1,
+              color = "#333333"
+            ),
             yaxis = list(showticklabels = FALSE)
           )
       )
@@ -3127,6 +3133,12 @@ server <- function(input, output, session) {
         panel.grid.major.x = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.y = element_line(color = "#E0E0E0"),
+        axis.text.x = element_text(
+          angle = 45,
+          hjust = 1,
+          vjust = 1,
+          color = "#333333"
+        ),
         axis.text = element_text(color = "#333333"),
         axis.title = element_text(face = "bold")
       )
@@ -3194,6 +3206,12 @@ server <- function(input, output, session) {
         panel.grid.major.x = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.y = element_line(color = "#E0E0E0"),
+        axis.text.x = element_text(
+          angle = 45,
+          hjust = 1,
+          vjust = 1,
+          color = "#333333"
+        ),
         axis.text = element_text(color = "#333333"),
         axis.title = element_text(face = "bold")
       )
