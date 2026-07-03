@@ -66,102 +66,104 @@ Perfil_Abrindo_C2 <- Perfil_Abrindo_C2 %>%
     49
   ))
 
-Presencas_Colectivas <- read_excel("Presencas_Colectivas.xlsx")
+Presencas_Colectivas <- read_excel("Presenças_PI_2026.xlsx")
 
-Presencas_Colectivas <- Presencas_Colectivas %>%
-  select(-c(
-    6,
-    11,
-    12
-  ))
-
-Presencas_Colectivas <- Presencas_Colectivas %>% rename(
-  Data_Registo = Nome_dos_Participantes.Modified_Time,
-  Facilitador = Nome_dos_Participantes.Facilitadores,
-  Distrito = Nome_dos_Participantes.DISTRITO,
-  Sexo = Nome_dos_Participantes.Sexo,
-  Turmas = Nome_dos_Participantes.Turmas,
-  Comunidade = Nome_dos_Participantes.COMUNIDADE,
-  Nome_Participante = Nome_dos_Participantes.Nome_Participante
-)
-
-# # Padronização de nomes das sessões
-Presencas_Colectivas <- Presencas_Colectivas %>%
-  mutate(Nome_da_sessao = case_when(
-    Nome_da_sessao == "1-Introdução(Apresentação do projecto e dos participantes-Facilitadores(as)" ~ "Sessao1",
-    Nome_da_sessao == "2-Proatividade e reatividade" ~ "Sessao2",
-    Nome_da_sessao == "3-Comunicação e gestão familiar" ~ "Sessao3",
-    Nome_da_sessao == "4-Processo empreendedor" ~ "Sessao4",
-    Nome_da_sessao == "5-Identificação de oportunidades de negócios" ~ "Sessao5",
-    Nome_da_sessao == "6-Planejamento e definição de metas" ~ "Sessao6",
-    Nome_da_sessao == "7-Contabilidade" ~ "Sessao7",
-    Nome_da_sessao == "8-Conheça os seus clientes" ~ "Sessao8",
-    Nome_da_sessao == "9-Como lidar com erros" ~ "Sessao9",
-    Nome_da_sessao == "10-Negociação com o fornecedor" ~ "Sessao10",
-    Nome_da_sessao == "11-Técnicas de resolução de problemas" ~ "Sessao11",
-    Nome_da_sessao == "12-Mapeamento parte 2" ~ "Sessao12",
-    TRUE ~ Nome_da_sessao
-  ))
-
-
-Presencas_Colectivas <- Presencas_Colectivas %>%
-  pivot_wider(names_from = Nome_da_sessao, values_from = Presenca)
-
-# Função de limpeza para valores compostos
-corrigir_presenca <- function(x) {
-  sapply(x, function(item) {
-    if (is.character(item) && length(item) == 1) {
-      return(trimws(item))
-    }
-    if ((is.list(item) || is.vector(item)) && length(item) > 1) {
-      item <- unlist(item)
-      item <- trimws(item)
-      if ("Presente" %in% item) {
-        return("Presente")
-      } else if ("Ausente" %in% item) {
-        return("Ausente")
-      } else {
-        return(NA)
-      }
-    }
-    return(NA)
-  })
-}
-
-# duplicados <- Presencas_Colectivas[duplicated(Presencas_Colectivas), ]
-# # 
-#  duplicados_Nome <- Presencas_Colectivas[duplicated(Presencas_Colectivas$Nome_Participante), ]
-
-
-# Identificar colunas de sessão após pivot_wider
-sessao_cols <- grep("^Sessao\\d+$", names(Presencas_Colectivas), value = TRUE)
-
-# Aplicar a função de correção
-Presencas_Colectivas[sessao_cols] <- lapply(Presencas_Colectivas[sessao_cols], corrigir_presenca)
-
-
-
-# Substituir NULL por NA nas colunas de sessões
-sessao_cols <- grep("^Sessao\\d+$", names(Presencas_Colectivas), value = TRUE)
-for (col in sessao_cols) {
-  Presencas_Colectivas[[col]][sapply(Presencas_Colectivas[[col]], is.null)] <- NA
-}
-
-Presencas_Colectivas <- Presencas_Colectivas %>%
-  rowwise() %>%
-  mutate(Num_Ausencias = sum(c_across(all_of(sessao_cols)) == "Ausente", na.rm = TRUE)) %>%
-  ungroup()
-
-Presencas_Colectivas <- Presencas_Colectivas %>%
-  {
-    colunas_atuais <- names(.)
-
-    colunas_fixas <- c("Data_Registo", "Facilitador", "Distrito", "Sexo", "Turmas", "Comunidade", "Nome_Participante")
-    colunas_sessoes <- str_sort(colunas_atuais[str_detect(colunas_atuais, "^Sessao\\d+$")], numeric = TRUE)
-    colunas_restantes <- setdiff(colunas_atuais, c(colunas_fixas, colunas_sessoes))
-
-    select(., all_of(c(colunas_fixas, colunas_sessoes, colunas_restantes)))
-  }
+# Presencas_Colectivas <- Presencas_Colectivas %>%
+#   select(-c(
+#     6,
+#     11,
+#     12
+#   ))
+# 
+# Presencas_Colectivas <- Presencas_Colectivas %>% rename(
+#   Data_Registo = Nome_dos_Participantes.Modified_Time,
+#   Facilitador = Nome_dos_Participantes.Facilitadores,
+#   Distrito = Nome_dos_Participantes.DISTRITO,
+#   Sexo = Nome_dos_Participantes.Sexo,
+#   Turmas = Nome_dos_Participantes.Turmas,
+#   Comunidade = Nome_dos_Participantes.COMUNIDADE,
+#   Nome_Participante = Nome_dos_Participantes.Nome_Participante
+# )
+# 
+# # # Padronização de nomes das sessões
+# Presencas_Colectivas <- Presencas_Colectivas %>%
+#   mutate(Nome_da_sessao = case_when(
+#     Nome_da_sessao == "1-Introdução(Apresentação do projecto e dos participantes-Facilitadores(as)" ~ "Sessao1",
+#     Nome_da_sessao == "2-Proatividade e reatividade" ~ "Sessao2",
+#     Nome_da_sessao == "3-Comunicação e gestão familiar" ~ "Sessao3",
+#     Nome_da_sessao == "4-Processo empreendedor" ~ "Sessao4",
+#     Nome_da_sessao == "5-Identificação de oportunidades de negócios" ~ "Sessao5",
+#     Nome_da_sessao == "6-Planejamento e definição de metas" ~ "Sessao6",
+#     Nome_da_sessao == "7-Contabilidade" ~ "Sessao7",
+#     Nome_da_sessao == "8-Conheça os seus clientes" ~ "Sessao8",
+#     Nome_da_sessao == "9-Como lidar com erros" ~ "Sessao9",
+#     Nome_da_sessao == "10-Negociação com o fornecedor" ~ "Sessao10",
+#     Nome_da_sessao == "11-Técnicas de resolução de problemas" ~ "Sessao11",
+#     Nome_da_sessao == "12-Mapeamento parte 2" ~ "Sessao12",
+#     TRUE ~ Nome_da_sessao
+#   ))
+# 
+# 
+# Presencas_Colectivas <- Presencas_Colectivas %>%
+#   pivot_wider(names_from = Nome_da_sessao, values_from = Presenca)
+# 
+# # Função de limpeza para valores compostos
+# corrigir_presenca <- function(x) {
+#   sapply(x, function(item) {
+#     if (is.character(item) && length(item) == 1) {
+#       return(trimws(item))
+#     }
+#     if ((is.list(item) || is.vector(item)) && length(item) > 1) {
+#       item <- unlist(item)
+#       item <- trimws(item)
+#       if ("Presente" %in% item) {
+#         return("Presente")
+#       } else if ("Ausente" %in% item) {
+#         return("Ausente")
+#       } else {
+#         return(NA)
+#       }
+#     }
+#     return(NA)
+#   })
+# }
+# 
+# # duplicados <- Presencas_Colectivas[duplicated(Presencas_Colectivas), ]
+# # # 
+# #  duplicados_Nome <- Presencas_Colectivas[duplicated(Presencas_Colectivas$Nome_Participante), ]
+# 
+# 
+# # Identificar colunas de sessão após pivot_wider
+# sessao_cols <- grep("^Sessao\\d+$", names(Presencas_Colectivas), value = TRUE)
+# 
+# # Aplicar a função de correção
+# Presencas_Colectivas[sessao_cols] <- lapply(Presencas_Colectivas[sessao_cols], corrigir_presenca)
+# 
+# 
+# 
+# # Substituir NULL por NA nas colunas de sessões
+# sessao_cols <- grep("^Sessao\\d+$", names(Presencas_Colectivas), value = TRUE)
+# for (col in sessao_cols) {
+#   Presencas_Colectivas[[col]][sapply(Presencas_Colectivas[[col]], is.null)] <- NA
+# }
+# 
+# Presencas_Colectivas <- Presencas_Colectivas %>%
+#   rowwise() %>%
+#   mutate(Num_Ausencias = sum(c_across(all_of(sessao_cols)) == "Ausente", na.rm = TRUE)) %>%
+#   ungroup()
+# 
+# Presencas_Colectivas <- Presencas_Colectivas %>%
+#   {
+#     colunas_atuais <- names(.)
+# 
+#     colunas_fixas <- c("Data_Registo", "Facilitador", "Distrito", "Sexo", "Turmas", "Comunidade", "Nome_Participante")
+#     colunas_sessoes <- str_sort(colunas_atuais[str_detect(colunas_atuais, "^Sessao\\d+$")], numeric = TRUE)
+#     colunas_restantes <- setdiff(colunas_atuais, c(colunas_fixas, colunas_sessoes))
+# 
+#     select(., all_of(c(colunas_fixas, colunas_sessoes, colunas_restantes)))
+#   }
+# 
+# write_xlsx(Presencas_Colectivas, "Presenças_PI_2026.xlsx")
 
 ############### PERFIL COM PRESENCAS MONAPO
 
@@ -585,4 +587,9 @@ Presencas_BPA <- Presencas_BPA %>%
 # 
 # Lista_Mentoria_Abrindo <- rbind(Lista_Mentoria_Monapo,Lista_Mentoria_Ribaue)
 
+################## FEIRAS
+
+
+
+Ficha_Monitoria_Feiras <- read_excel("Ficha_Monitoria_Feiras.xlsx")
 

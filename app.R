@@ -33,11 +33,11 @@ ui_overview <- tabPanel("📈 Overview",
                             div(
                               class = "value-box-container",
                               
-                              div(class = "value-box blue",
+                              div(class = "value-box green",
                                   textOutput("total_part"),
                                   div("Total de Participantes")),
                               
-                              div(class = "value-box green",
+                              div(class = "value-box blue",
                                   textOutput("total_mul"),
                                   div("Mulheres")),
                               
@@ -150,14 +150,29 @@ ui_presencas <- tabPanel("📋 Presenças_PI",
                                         )
                                       ),
                                       mainPanel(
+                                        
+                                        div(
+                                          class = "value-box-container",
+                                          
+                                          div(class = "value-box green",
+                                              textOutput("total_concluintes"),
+                                              div("Total de Concluintes")),
+                                          
+                                          div(class = "value-box blue",
+                                              textOutput("mulheres_concluintes"),
+                                              div("Mulheres")),
+                                          
+                                          div(class = "value-box orange",
+                                              textOutput("homens_concluintes"),
+                                              div("Homens"))
+                                        ),
+                                        
+                                        br(),
                                         div(
                                           style = "background-color:#f5f3f4; padding:12px; border-radius:6px; margin-bottom:20px;",
-                                          tags$h4(
-                                            style = "margin: 0; text-align: justify;",
-                                            "O gráfico a seguir ilustra o número de participantes presentes em cada uma das sessões de PI. ",
-                                            "A linha roxa representa o total previsto de participantes por sessão."
-                                          )
+                                          htmlOutput("texto_concluintes")
                                         ),
+                                        br (),
                                         
                                         downloadButton("baixarBasePresencasExcel", "Baixar_Presenças"),
                                         withSpinner(
@@ -447,6 +462,70 @@ ui_poupanca <- tabPanel("💰 Poupança",
                         )
 )
 
+ui_feiras <- tabPanel("🛍️ Feiras",
+                      
+                      tabsetPanel(
+                        
+                        tabPanel("📊 Visão Geral",
+                                 
+                                 sidebarLayout(
+                                   
+                                   sidebarPanel(
+                                     
+                                     selectInput("filtro_distrito_feiras", "Distrito:",
+                                                 choices = c("Todos", unique(Ficha_Monitoria_Feiras$Distrito)),
+                                                 selected = "Todos"),
+                                     
+                                     selectInput("filtro_comunidade_feiras", "Comunidade:",
+                                                 choices = c("Todas", unique(Ficha_Monitoria_Feiras$Local_Feira)),
+                                                 selected = "Todas"),
+                                     
+                                     selectInput("filtro_facilitador_feiras", "Facilitador:",
+                                                 choices = c("Todos", unique(Ficha_Monitoria_Feiras$Facilitador)),
+                                                 selected = "Todos")
+                                   ),
+                                   
+                                   mainPanel(
+                                     
+                                     # VALUE BOXES
+                                     fluidRow(
+                                       column(3,
+                                              div(style = "background:#69C7BE;color:white;padding:15px;border-radius:12px;text-align:center;",
+                                                  h5("Total de Participantes"),
+                                                  h3(textOutput("total_participantes_feiras"))
+                                              )
+                                       ),
+                                       
+                                       column(3,
+                                              div(style = "background:#6f42c1;color:white;padding:15px;border-radius:12px;text-align:center;",
+                                                  h5("Mulheres"),
+                                                  h3(textOutput("mulheres_feiras"))
+                                              )
+                                       ),
+                                       
+                                       column(3,
+                                              div(style = "background:#F77333;color:white;padding:15px;border-radius:12px;text-align:center;",
+                                                  h5("Homens"),
+                                                  h3(textOutput("homens_feiras"))
+                                              )
+                                       )
+                                     ),
+                                     
+                                     br(),
+                                     
+                                     plotlyOutput("grafico_feiras_categoria"),
+                                     br(),
+                                      DTOutput("tabela_feiras"),
+                                     br(),
+                                     
+                                     plotlyOutput("grafico_feiras_produtos")
+                                   )
+                                 )
+                        )
+                      )
+)
+
+
 # ui_Mentoria <- tabPanel(
 #   "Mentoria",
 #   sidebarLayout(
@@ -614,6 +693,7 @@ ui <- fluidPage(
     ui_Qualidade,
     ui_boaspraticas,
     ui_poupanca,
+    ui_feiras,
     # ui_Mentoria, 
     ui_admin
   )
@@ -1362,79 +1442,79 @@ server <- function(input, output, session) {
   #     ) +
   #     theme_stata(base_size = 12)
   # })
-  output$desistentesInput <- renderPlotly({
-    
-    data <- filteredData()
-    
-    # Filtra ausências completas
-    data <- data %>% filter(Num_Ausencias != 12)
-    
-    # Criação do status final
-    data <- data %>%
-      mutate(
-        status_final = case_when(
-          Num_Ausencias < 5 ~ "Concluiu com Sucesso",
-          Num_Ausencias >= 5 & Num_Ausencias < 7 ~ "Concluiu a Formação",
-          Num_Ausencias >= 7 & Num_Ausencias < 12 ~ "Desistente",
-          TRUE ~ NA_character_
-        )
-      )
-    
-    # Filtra apenas quem concluiu com sucesso
-    data_filtrada <- data %>%
-      filter(status_final == "Concluiu com Sucesso") %>%
-      group_by(Distrito, Sexo) %>%
-      summarise(Total = n(), .groups = "drop") %>%
-      mutate(label_text = paste0(Total))  # Texto que aparecerá nas barras
-    
-    # Plotly
-    plot_ly(
-      data = data_filtrada,
-      x = ~Distrito,
-      y = ~Total,
-      color = ~Sexo,
-      colors = c("Feminino" = "#8054A2", "Masculino" = "#F37238"),
-      type = "bar",
-      text = ~label_text,
-      textposition = "outside"
-    ) %>%
-      layout(
-        title = "Participantes que Concluíram com Sucesso",
-        showlegend = TRUE,
-        barmode = "group",
-        paper_bgcolor = "#f5f3f4",
-        plot_bgcolor = "#f5f3f4",
-        xaxis = list(title = "Distrito"),
-        yaxis = list(title = "Número de Participantes")
-      )
-    
-  })
-  
-  # Download Excel
-  output$download_excel <- downloadHandler(
-    filename = function() {
-      paste0("Participantes_Formacao_Concluiu_com_Sucesso_", Sys.Date(), ".xlsx")
-    },
-    content = function(file) {
-      data <- filteredData()
-      
-      # Classificação
-      data$status_final <- dplyr::case_when(
-        data$Num_Ausencias == 12 ~ "Não Iniciou",
-        data$Num_Ausencias < 5 ~ "Concluiu com Sucesso",
-        data$Num_Ausencias >= 5 & data$Num_Ausencias < 7 ~ "Concluiu a Formação",
-        data$Num_Ausencias >= 7 & data$Num_Ausencias < 12 ~ "Desistente",
-        TRUE ~ NA_character_
-      )
-      
-      # 🔹 Filtrar apenas "Concluiu com Sucesso"
-      data <- data %>%
-        dplyr::filter(status_final == "Concluiu com Sucesso")
-      
-      # Exportar Excel
-      writexl::write_xlsx(data, path = file)
-    }
-  )
+  # output$desistentesInput <- renderPlotly({
+  #   
+  #   data <- filteredData()
+  #   
+  #   # Filtra ausências completas
+  #   data <- data %>% filter(Num_Ausencias != 12)
+  #   
+  #   # Criação do status final
+  #   data <- data %>%
+  #     mutate(
+  #       status_final = case_when(
+  #         Num_Ausencias < 5 ~ "Concluiu com Sucesso",
+  #         Num_Ausencias >= 5 & Num_Ausencias < 7 ~ "Concluiu a Formação",
+  #         Num_Ausencias >= 7 & Num_Ausencias < 12 ~ "Desistente",
+  #         TRUE ~ NA_character_
+  #       )
+  #     )
+  #   
+  #   # Filtra apenas quem concluiu com sucesso
+  #   data_filtrada <- data %>%
+  #     filter(status_final == "Concluiu com Sucesso") %>%
+  #     group_by(Distrito, Sexo) %>%
+  #     summarise(Total = n(), .groups = "drop") %>%
+  #     mutate(label_text = paste0(Total))  # Texto que aparecerá nas barras
+  #   
+  #   # Plotly
+  #   plot_ly(
+  #     data = data_filtrada,
+  #     x = ~Distrito,
+  #     y = ~Total,
+  #     color = ~Sexo,
+  #     colors = c("Feminino" = "#8054A2", "Masculino" = "#F37238"),
+  #     type = "bar",
+  #     text = ~label_text,
+  #     textposition = "outside"
+  #   ) %>%
+  #     layout(
+  #       title = "Participantes que Concluíram com Sucesso",
+  #       showlegend = TRUE,
+  #       barmode = "group",
+  #       paper_bgcolor = "#f5f3f4",
+  #       plot_bgcolor = "#f5f3f4",
+  #       xaxis = list(title = "Distrito"),
+  #       yaxis = list(title = "Número de Participantes")
+  #     )
+  #   
+  # })
+  # 
+  # # Download Excel
+  # output$download_excel <- downloadHandler(
+  #   filename = function() {
+  #     paste0("Participantes_Formacao_Concluiu_com_Sucesso_", Sys.Date(), ".xlsx")
+  #   },
+  #   content = function(file) {
+  #     data <- filteredData()
+  #     
+  #     # Classificação
+  #     data$status_final <- dplyr::case_when(
+  #       data$Num_Ausencias == 12 ~ "Não Iniciou",
+  #       data$Num_Ausencias < 5 ~ "Concluiu com Sucesso",
+  #       data$Num_Ausencias >= 5 & data$Num_Ausencias < 7 ~ "Concluiu a Formação",
+  #       data$Num_Ausencias >= 7 & data$Num_Ausencias < 12 ~ "Desistente",
+  #       TRUE ~ NA_character_
+  #     )
+  #     
+  #     # 🔹 Filtrar apenas "Concluiu com Sucesso"
+  #     data <- data %>%
+  #       dplyr::filter(status_final == "Concluiu com Sucesso")
+  #     
+  #     # Exportar Excel
+  #     writexl::write_xlsx(data, path = file)
+  #   }
+  # )
   
   # # Download Excel
   # output$download_excel <- downloadHandler(
@@ -1686,7 +1766,64 @@ server <- function(input, output, session) {
     }
   )
   
+  dados_concluintes <- reactive({
+    
+    dados_filtrados_presencas() %>%
+      mutate(
+        Total_Presencas = rowSums(
+          across(starts_with("Sessao"), ~ . == "Presente"),
+          na.rm = TRUE
+        )
+      ) %>%
+      filter(Total_Presencas >= 8)
+    
+  })
   
+  output$total_concluintes <- renderText({
+    nrow(dados_concluintes())
+  })
+  
+  output$mulheres_concluintes <- renderText({
+    
+    dados_concluintes() %>%
+      filter(Sexo == "Feminino") %>%
+      nrow()
+    
+  })
+  output$homens_concluintes <- renderText({
+    
+    dados_concluintes() %>%
+      filter(Sexo == "Masculino") %>%
+      nrow()
+    
+  })
+  
+  dados_concluintes <- reactive({
+    dados_filtrados_presencas() %>%
+      filter(Num_Ausencias <= 4)
+  }) 
+  
+  output$texto_concluintes <- renderUI({
+    
+    total <- nrow(dados_concluintes())
+    mulheres <- sum(dados_concluintes()$Sexo == "Feminino", na.rm = TRUE)
+    homens <- sum(dados_concluintes()$Sexo == "Masculino", na.rm = TRUE)
+    
+    tags$h4(
+      style = "margin:0; text-align:justify;",
+      HTML(
+        paste0(
+          "Após a aplicação do critério de conclusão da formação (participação em pelo menos <b>8 das 12 sessões</b>), ",
+          "foram identificados <b>", total, "</b> participantes concluintes, dos quais ",
+          "<b>", mulheres, "</b> são mulheres e ",
+          "<b>", homens, "</b> são homens. ",
+          "Os resultados apresentados acima refletem os filtros atualmente selecionados para distrito, comunidade e facilitador. ",
+          "O gráfico abaixo ilustra o nível de participação em cada sessão das 12 sessões ministradas. "
+        )
+      )
+    )
+    
+  })
   
   
   ###################### PARTICIPACAO POR SEXO ################## 
@@ -2154,12 +2291,6 @@ server <- function(input, output, session) {
             paper_bgcolor = "#f5f3f4",
             plot_bgcolor  = "#f5f3f4",
             xaxis = list(showticklabels = FALSE),
-            axis.text.x = element_text(
-              angle = 45,
-              hjust = 1,
-              vjust = 1,
-              color = "#333333"
-            ),
             yaxis = list(showticklabels = FALSE)
           )
       )
@@ -3246,7 +3377,161 @@ server <- function(input, output, session) {
               ),
               extensions = 'Buttons')
   })
-  # # 
+  # ###################### FEIRAS 
+  observe({
+    
+    req(input$filtro_distrito_feiras)
+    
+    df <- Ficha_Monitoria_Feiras
+    
+    if (input$filtro_distrito_feiras != "Todos") {
+      df <- df %>% filter(Distrito == input$filtro_distrito_feiras)
+    }
+    
+    comunidades <- sort(unique(df$Comunidade))
+    comunidades <- c("Todas", comunidades)
+    
+    updateSelectInput(
+      session,
+      "filtro_comunidade_feiras",
+      choices = comunidades,
+      selected = "Todas"
+    )
+    
+  })
+  
+  observe({
+    
+    req(input$filtro_comunidade_feiras)
+    
+    df <- Ficha_Monitoria_Feiras
+    
+    if (input$filtro_distrito_feiras != "Todos") {
+      df <- df %>% filter(Distrito == input$filtro_distrito_feiras)
+    }
+    
+    if (input$filtro_comunidade_feiras != "Todas") {
+      df <- df %>% filter(Comunidade == input$filtro_comunidade_feiras)
+    }
+    
+    facilitadores <- sort(unique(df$Facilitador))
+    facilitadores <- c("Todos", facilitadores)
+    
+    updateSelectInput(
+      session,
+      "filtro_facilitador_feiras",
+      choices = facilitadores,
+      selected = "Todos"
+    )
+    
+  })
+  
+  dados_feiras <- reactive({
+    
+    df <- Ficha_Monitoria_Feiras
+    
+    if (input$filtro_distrito_feiras != "Todos") {
+      df <- df %>% filter(Distrito == input$filtro_distrito_feiras)
+    }
+    
+    if (input$filtro_comunidade_feiras != "Todas") {
+      df <- df %>% filter(Comunidade == input$filtro_comunidade_feiras)
+    }
+    
+    if (input$filtro_facilitador_feiras != "Todos") {
+      df <- df %>% filter(Facilitador == input$filtro_facilitador_feiras)
+    }
+    
+    df
+    
+  })
+  output$total_participantes_feiras <- renderText({
+    n_distinct(dados_feiras()$Nome_Participante)
+  })
+  
+  
+  output$mulheres_feiras <- renderText({
+    dados_feiras() %>%
+      filter(Sexo == "Feminino") %>%
+      summarise(n = n_distinct(Nome_Participante)) %>%
+      pull(n)
+  })
+  
+  output$homens_feiras <- renderText({
+    dados_feiras() %>%
+      filter(Sexo == "Masculino") %>%
+      summarise(n = n_distinct(Nome_Participante)) %>%
+      pull(n)
+  })
+  
+  output$grafico_feiras_categoria <- renderPlotly({
+    
+    df <- dados_feiras() %>%
+      mutate(
+        Valor_Total_Vendido_MZN = as.numeric(Valor_Total_Vendido_MZN)
+      ) %>%
+      group_by(Categoria_Produto) %>%
+      summarise(
+        total_vendido = sum(Valor_Total_Vendido_MZN, na.rm = TRUE)
+      ) %>%
+      arrange(total_vendido)
+    
+    plot_ly(
+      df,
+      
+      x = ~total_vendido,
+      y = ~reorder(Categoria_Produto, total_vendido),
+      
+      type = "bar",
+      orientation = "h",
+      
+      # 👇 valor no meio da barra
+      text = ~paste0(total_vendido),
+      textposition = "inside",
+      
+      insidetextanchor = "middle",
+      
+      marker = list(
+        color = c("#0d6efd","#69C7BE", "#20c997", "#F77333", "#ffc107", "#9942D4")
+      )
+    ) %>%
+      
+      layout(
+        
+        title = list(
+          text = "Receita por Categoria de Produto",
+          x = 0.5,
+          font = list(size = 16)
+        ),
+        
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        
+        margin = list(t = 100, l = 150),
+        
+        xaxis = list(title = "Valor (MZN)"),
+        
+        yaxis = list(title = "", automargin = TRUE)
+      )
+  })
+  
+  
+  output$tabela_feiras <- renderDT({
+    
+    datatable(
+      dados_feiras(),
+      rownames = FALSE,
+      filter = "top",
+      extensions = "Buttons",
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE,
+        dom = "Bfrtip",
+        buttons = c("copy", "csv", "excel", "print")
+      )
+    )
+    
+  })
   # ########################## MENTORIA
   # 
   # # ------------------------------
@@ -3468,14 +3753,14 @@ server <- function(input, output, session) {
         refresh_token
       )$access_token
       
-      Presencas_Colectivas <- RZohoCreator::get_records(
-        "associacaomuva",
-        "monitoria-edm",
-        "lista_presencaKM",
-        access_token
-      )
-      
-      writexl::write_xlsx(Presencas_Colectivas, "Presencas_Colectivas.xlsx")
+      # Presencas_Colectivas <- RZohoCreator::get_records(
+      #   "associacaomuva",
+      #   "monitoria-edm",
+      #   "lista_presencaKM",
+      #   access_token
+      # )
+      # 
+      # writexl::write_xlsx(Presencas_Colectivas, "Presencas_Colectivas.xlsx")
       
       
       Presencas_BPA <- RZohoCreator::get_records(
