@@ -472,53 +472,119 @@ ui_feiras <- tabPanel("🛍️ Feiras",
                                    
                                    sidebarPanel(
                                      
-                                     selectInput("filtro_distrito_feiras", "Distrito:",
-                                                 choices = c("Todos", unique(Ficha_Monitoria_Feiras$Distrito)),
-                                                 selected = "Todos"),
+                                     selectInput(
+                                       "filtro_distrito_feiras",
+                                       "Distrito:",
+                                       choices = c(
+                                         "Todos",
+                                         unique(Ficha_Monitoria_Feiras$Distrito)
+                                       ),
+                                       selected = "Todos"
+                                     ),
                                      
-                                     selectInput("filtro_comunidade_feiras", "Comunidade:",
-                                                 choices = c("Todas", unique(Ficha_Monitoria_Feiras$Local_Feira)),
-                                                 selected = "Todas"),
+                                     selectInput(
+                                       "filtro_comunidade_feiras",
+                                       "Comunidade:",
+                                       choices = c(
+                                         "Todas",
+                                         unique(Ficha_Monitoria_Feiras$Local_Feira)
+                                       ),
+                                       selected = "Todas"
+                                     ),
                                      
-                                     selectInput("filtro_facilitador_feiras", "Facilitador:",
-                                                 choices = c("Todos", unique(Ficha_Monitoria_Feiras$Facilitador)),
-                                                 selected = "Todos")
+                                     selectInput(
+                                       "filtro_facilitador_feiras",
+                                       "Facilitador:",
+                                       choices = c(
+                                         "Todos",
+                                         unique(Ficha_Monitoria_Feiras$Facilitador)
+                                       ),
+                                       selected = "Todos"
+                                     )
                                    ),
                                    
                                    mainPanel(
                                      
-                                     # VALUE BOXES
                                      fluidRow(
-                                       column(3,
-                                              div(style = "background:#69C7BE;color:white;padding:15px;border-radius:12px;text-align:center;",
-                                                  h5("Total de Participantes"),
-                                                  h3(textOutput("total_participantes_feiras"))
-                                              )
+                                       
+                                       column(
+                                         3,
+                                         div(
+                                           style="background:#69C7BE;color:white;padding:15px;border-radius:12px;text-align:center;",
+                                           h5("Total Participantes"),
+                                           h3(textOutput("total_participantes_feiras"))
+                                         )
                                        ),
                                        
-                                       column(3,
-                                              div(style = "background:#6f42c1;color:white;padding:15px;border-radius:12px;text-align:center;",
-                                                  h5("Mulheres"),
-                                                  h3(textOutput("mulheres_feiras"))
-                                              )
+                                       column(
+                                         3,
+                                         div(
+                                           style="background:#6f42c1;color:white;padding:15px;border-radius:12px;text-align:center;",
+                                           h5("Mulheres"),
+                                           h3(textOutput("mulheres_feiras"))
+                                         )
                                        ),
                                        
-                                       column(3,
-                                              div(style = "background:#F77333;color:white;padding:15px;border-radius:12px;text-align:center;",
-                                                  h5("Homens"),
-                                                  h3(textOutput("homens_feiras"))
-                                              )
+                                       column(
+                                         3,
+                                         div(
+                                           style="background:#F77333;color:white;padding:15px;border-radius:12px;text-align:center;",
+                                           h5("Homens"),
+                                           h3(textOutput("homens_feiras"))
+                                         )
+                                       ),
+                                       
+                                       column(
+                                         3,
+                                         div(
+                                           style="background:#f9a825;color:white;padding:15px;border-radius:12px;text-align:center;",
+                                           h5("Valor Total Vendido (MZN)"),
+                                           h3(textOutput("valor_total_vendido_feiras"))
+                                         )
                                        )
+                                       
                                      ),
                                      
                                      br(),
                                      
-                                     plotlyOutput("grafico_feiras_categoria"),
-                                     br(),
-                                      DTOutput("tabela_feiras"),
+                                     fluidRow(
+                                       
+                                       column(
+                                         6,
+                                         plotlyOutput(
+                                           "grafico_feiras_distritos",
+                                           height = "400px"
+                                         )
+                                       ),
+                                       
+                                       column(
+                                         6,
+                                         plotlyOutput(
+                                           "grafico_feir",
+                                           height = "400px"
+                                         )
+                                       )
+                                       
+                                     ),
+                                     
                                      br(),
                                      
-                                     plotlyOutput("grafico_feiras_produtos")
+                                     plotlyOutput(
+                                       "grafico_feiras_categoria",
+                                       height = "450px"
+                                     ),
+                                     
+                                     br(),
+                                     
+                                     DTOutput("tabela_feiras"),
+                                     
+                                     br(),
+                                     
+                                     plotlyOutput(
+                                       "grafico_feiras_produtos",
+                                       height = "450px"
+                                     )
+                                     
                                    )
                                  )
                         )
@@ -3464,35 +3530,163 @@ server <- function(input, output, session) {
       pull(n)
   })
   
+  output$valor_total_vendido_feiras <- renderText({
+    
+    total <- dados_feiras() %>%
+      mutate(
+        Valor_Total_Vendido_MZN = as.numeric(Valor_Total_Vendido_MZN)
+      ) %>%
+      summarise(
+        total = sum(Valor_Total_Vendido_MZN, na.rm = TRUE)
+      ) %>%
+      pull(total)
+    
+    format(total, big.mark = " ", nsmall = 0)
+  })
+  
+  output$grafico_feiras_distritos <- renderPlotly({
+    
+    df <- Ficha_Monitoria_Feiras %>%
+      filter(
+        !is.na(Distrito),
+        !is.na(Sexo),
+        !is.na(Nome_Participante)
+      ) %>%
+      distinct(Nome_Participante, Distrito, Sexo) %>%
+      count(Distrito, Sexo)
+    
+    plot_ly(
+      data = df,
+      x = ~Distrito,
+      y = ~n,
+      color = ~Sexo,
+      type = "bar",
+      colors = c(
+        "Feminino" = "#9942D4",
+        "Masculino" = "#F77333"
+      ),
+      text = ~n,
+      textposition = "inside",
+      textfont = list(
+        color = "white",
+        size = 13
+      ),
+      marker = list(
+        line = list(
+          color = "white",
+          width = 1
+        )
+      ),
+      hovertemplate = paste(
+        "<b>Distrito:</b> %{x}<br>",
+        "<b>Sexo:</b> %{fullData.name}<br>",
+        "<b>Total:</b> %{y}<extra></extra>"
+      )
+    ) %>%
+      layout(
+        title = list(
+          text = "<b>Participantes por Distrito e Sexo</b>"
+        ),
+        barmode = "group",   # barras lado a lado
+        
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        
+        xaxis = list(
+          title = "",
+          tickangle = -20
+        ),
+        
+        yaxis = list(
+          title = "Número de Participantes",
+          rangemode = "tozero"
+        ),
+        
+        legend = list(
+          title = list(text = "<b>Sexo</b>"),
+          orientation = "h",
+          x = 0.35,
+          y = 1.12
+        ),
+        
+        margin = list(
+          t = 70,
+          b = 80,
+          l = 60,
+          r = 20
+        )
+      )
+    
+  })
+  
+  
   output$grafico_feiras_categoria <- renderPlotly({
     
+    # Cores por categoria
+    cores_categoria <- c(
+      "Alim. confeccionado/preparado" = "#9942D4",
+      "Alim. não perecível (revenda)" = "#F77333",
+      "Alim. perecível (revenda)" = "#ffc107",
+      "Alimentício" = "#69C7BE",
+      "Artesanato" = "#a2d2ff",
+      "Calçados" = "#219ebc",
+      "Higiene e limpeza" = "#f72585",
+      "Outro" = "#b88b4a",
+      "Perecível" = "#9a031e",
+      "Produção própria / Machamba" = "#27AE60",
+      "Vestuário" = "#2d00f7"
+    )
+    
+    
+    # Preparação dos dados
     df <- dados_feiras() %>%
       mutate(
         Valor_Total_Vendido_MZN = as.numeric(Valor_Total_Vendido_MZN)
       ) %>%
       group_by(Categoria_Produto) %>%
       summarise(
-        total_vendido = sum(Valor_Total_Vendido_MZN, na.rm = TRUE)
+        total_vendido = sum(Valor_Total_Vendido_MZN, na.rm = TRUE),
+        .groups = "drop"
       ) %>%
-      arrange(total_vendido)
+      arrange(desc(total_vendido)) %>%
+      mutate(
+        Categoria_Produto = factor(
+          Categoria_Produto,
+          levels = Categoria_Produto
+        )
+      )
     
+    
+    # Gráfico
     plot_ly(
-      df,
+      data = df,
       
-      x = ~total_vendido,
-      y = ~reorder(Categoria_Produto, total_vendido),
+      x = ~Categoria_Produto,
+      y = ~total_vendido,
       
       type = "bar",
-      orientation = "h",
       
-      # 👇 valor no meio da barra
-      text = ~paste0(total_vendido),
-      textposition = "inside",
+      # Valores acima das barras
+      text = ~format(total_vendido, big.mark = " "),
+      textposition = "outside",
       
-      insidetextanchor = "middle",
+      textfont = list(
+        color = "black",
+        size = 12
+      ),
       
       marker = list(
-        color = c("#0d6efd","#69C7BE", "#20c997", "#F77333", "#ffc107", "#9942D4")
+        color = ~cores_categoria[as.character(Categoria_Produto)],
+        line = list(
+          color = "white",
+          width = 1
+        )
+      ),
+      
+      hovertemplate = paste(
+        "<b>Categoria:</b> %{x}<br>",
+        "<b>Valor vendido:</b> %{y:,.0f} MZN",
+        "<extra></extra>"
       )
     ) %>%
       
@@ -3507,14 +3701,109 @@ server <- function(input, output, session) {
         paper_bgcolor = "#f5f3f4",
         plot_bgcolor  = "#f5f3f4",
         
-        margin = list(t = 100, l = 150),
+        xaxis = list(
+          title = "",
+          tickangle = -45,
+          automargin = TRUE
+        ),
         
-        xaxis = list(title = "Valor (MZN)"),
+        yaxis = list(
+          title = "Valor (MZN)",
+          tickformat = ",",
+          rangemode = "tozero",
+          range = c(
+            0,
+            max(df$total_vendido, na.rm = TRUE) * 1.20
+          )
+        ),
         
-        yaxis = list(title = "", automargin = TRUE)
+        margin = list(
+          t = 100,
+          b = 160,
+          l = 70,
+          r = 20
+        )
       )
   })
   
+  output$grafico_feir <- renderPlotly({
+    
+    df <- dados_feiras() %>%
+      mutate(
+        Valor_Total_Vendido_MZN = as.numeric(Valor_Total_Vendido_MZN)
+      ) %>%
+      group_by(Distrito) %>%
+      summarise(
+        total_vendido = sum(Valor_Total_Vendido_MZN, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      arrange(desc(total_vendido))
+    
+    
+    plot_ly(
+      data = df,
+      
+      x = ~Distrito,
+      y = ~total_vendido,
+      
+      type = "bar",
+      
+      text = ~format(total_vendido, big.mark = " "),
+      textposition = "outside",
+      
+      textfont = list(
+        color = "black",
+        size = 12
+      ),
+      
+      marker = list(
+        color = "#f9a825",
+        line = list(
+          color = "white",
+          width = 1
+        )
+      ),
+      
+      hovertemplate = paste(
+        "<b>Distrito:</b> %{x}<br>",
+        "<b>Total Vendido:</b> %{y:,.0f} MZN",
+        "<extra></extra>"
+      )
+    ) %>%
+      
+      layout(
+        
+        title = list(
+          text = "Valor Total Vendido por Distrito",
+          x = 0.5,
+          font = list(size = 16)
+        ),
+        
+        paper_bgcolor = "#f5f3f4",
+        plot_bgcolor  = "#f5f3f4",
+        
+        xaxis = list(
+          title = "",
+          tickangle = -45,
+          automargin = TRUE
+        ),
+        
+        yaxis = list(
+          title = "Valor Vendido (MZN)",
+          tickformat = ",",
+          rangemode = "tozero",
+          range = c(
+            0,
+            max(df$total_vendido, na.rm = TRUE) * 1.20
+          )
+        ),
+        
+        margin = list(
+          t = 100,
+          b = 120
+        )
+      )
+  })
   
   output$tabela_feiras <- renderDT({
     

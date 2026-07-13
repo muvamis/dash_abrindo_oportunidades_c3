@@ -187,6 +187,12 @@ Presencas_Ribaue_Perfil <- Presencas_Ribaue %>%
     by = c("Nome_Participante", "Comunidade")
   )
 
+# write_xlsx(Presencas_Monapo_Perfil, "Presencas_Monapo_Perfil.xlsx")
+Presencas_Monapo_Perfil <- read_excel("Presencas_Monapo_Perfil.xlsx")
+
+Presencas_Ribaue_Perfil <- read_excel("Presencas_Ribaue_Perfil.xlsx")
+
+
 Ribaue_Perfil_Nao_Enco <- Presencas_Ribaue %>%
   anti_join(
     Selecionados_Motivacional_Ribaue_2025,
