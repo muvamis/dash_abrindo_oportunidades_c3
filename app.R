@@ -12,7 +12,7 @@ credentials <- reactiveValues(authenticated = FALSE)
 # ==============================
 # 4. UI: Overview
 # ==============================
-ui_overview <- tabPanel("📈 Overview",
+ui_overview <- tabPanel("📈 Visão Geral",
                         sidebarLayout(
                           sidebarPanel(
                             selectInput(
@@ -462,7 +462,7 @@ ui_poupanca <- tabPanel("💰 Poupança",
                         )
 )
 
-ui_feiras <- tabPanel("🛍️ Feiras",
+ui_feiras <- tabPanel("🛍 Feira",
                       
                       tabsetPanel(
                         
@@ -644,6 +644,71 @@ ui_feiras <- tabPanel("🛍️ Feiras",
 #   )
 # )
 
+# ==============================
+# TOC ABRINDO OPORTUNIDADES
+# ==============================
+
+# ============================================================
+# UI — TOC ABRINDO OPORTUNIDADES
+# ============================================================
+
+ui_toc_abrindo <- tabPanel(
+  tagList(
+    icon("chart-line"),
+    "TOC Abrindo"
+  ),
+  
+  fluidPage(
+    br(),
+    
+    fluidRow(
+      box(
+        width = 12,
+        title = "Tabela de acompanhamento dos indicadores",
+        status = "primary",
+        solidHeader = TRUE,
+        
+        p(
+          "Acompanhamento das metas, resultados alcançados ",
+          "e progresso dos indicadores do programa."
+        ),
+        
+        fluidRow(
+          column(
+            width = 4,
+            tags$span(
+              style = "color: #28a745; font-weight: bold;",
+              icon("check-circle"),
+              " Meta alcançada"
+            )
+          ),
+          
+          column(
+            width = 4,
+            tags$span(
+              style = "color: #f9a825; font-weight: bold;",
+              icon("chart-line"),
+              " Em progresso"
+            )
+          ),
+          
+          column(
+            width = 4,
+            tags$span(
+              style = "color: #777777; font-weight: bold;",
+              icon("info-circle"),
+              " Sem dados"
+            )
+          )
+        ),
+        
+        br(),
+        
+        DTOutput("toc_matriz_indicadores")
+      )
+    )
+  )
+)
 
 # ==============================
 # 📦 CONFIGURAÇÃO
@@ -669,6 +734,14 @@ ui <- fluidPage(
   
   # ------------------ CSS Customizado ------------------
   tags$head(
+    
+    
+    tags$head(
+      tags$script(
+        src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+      )
+    ),
+    
     tags$style(HTML("
       /* Navbar */
       .navbar {
@@ -747,8 +820,11 @@ ui <- fluidPage(
       @media (max-width: 380px) {
         .value-box { flex: 1 1 100%; }
       }
-    "))
+    ")),
+    # BOTÃO DE IDIOMA PT | EN
+    tags$script(src = "i18n/i18n.js")
   ),
+  
   
   # ------------------ NAVBAR ------------------
   navbarPage(
@@ -760,6 +836,7 @@ ui <- fluidPage(
     ui_boaspraticas,
     ui_poupanca,
     ui_feiras,
+    ui_toc_abrindo,
     # ui_Mentoria, 
     ui_admin
   )
@@ -2235,6 +2312,8 @@ server <- function(input, output, session) {
       )
     )
   })
+  
+  
   ################# MONITORIA BPA #########################
   # 
   dados_filtrados_boaspraticas <- reactive({
@@ -3959,6 +4038,948 @@ server <- function(input, output, session) {
   # })
   # 
   
+  
+  
+  
+  # ============================================================
+  # TOC ABRINDO OPORTUNIDADES — INDICADORES
+  # Objectos isolados para não interferir com os gráficos
+  # ============================================================
+  
+  library(dplyr)
+  library(tidyr)
+  library(stringr)
+  library(tibble)
+  
+  # ============================================================
+  # 1. METAS DO TOC
+  # ============================================================
+  
+  TOC_Abrindo_Metas <- tibble(
+    ID_Indicador = c(
+      "AO_TOC_01",
+      "AO_TOC_02",
+      "AO_TOC_03",
+      "AO_TOC_04",
+      "AO_TOC_05"
+    ),
+    
+    Indicador = c(
+      "Participantes seleccionados",
+      "Participantes que iniciaram a formação",
+      "Participantes que terminaram a formação",
+      "Percentagem de mulheres que terminaram a formação",
+      "Percentagem de homens que terminaram a formação"
+    ),
+    
+    Meta = c(1500, 1000, 950, 80, 80),
+    
+    Unidade = c(
+      "Participantes",
+      "Participantes",
+      "Participantes",
+      "%",
+      "%"
+    )
+  )
+  
+  # ============================================================
+  # 2. FUNÇÃO PARA NORMALIZAR TEXTO
+  # ============================================================
+  
+  TOC_Abrindo_normalizar <- function(x) {
+    stringr::str_to_upper(
+      stringr::str_squish(as.character(x))
+    )
+  }
+  
+  # ============================================================
+  # 3. IDENTIFICAR AS COLUNAS DAS SESSÕES COLECTIVAS
+  # ============================================================
+  
+  TOC_Abrindo_col_sessoes <- grep(
+    "^Sessao",
+    names(Presencas_Colectivas),
+    value = TRUE,
+    ignore.case = TRUE
+  )
+  
+  if (length(TOC_Abrindo_col_sessoes) == 0) {
+    stop(
+      "TOC Abrindo: não foram encontradas colunas de sessões ",
+      "na base Presencas_Colectivas."
+    )
+  }
+  
+  # ============================================================
+  # 4. PREPARAR A BASE DE PARTICIPANTES SELECCIONADOS
+  # ============================================================
+  
+  TOC_Abrindo_selecionados <- Perfil_Abrindo_C2 %>%
+    mutate(
+      TOC_Abrindo_Distrito = TOC_Abrindo_normalizar(Distrito),
+      TOC_Abrindo_Comunidade = TOC_Abrindo_normalizar(Comunidade),
+      TOC_Abrindo_Nome = TOC_Abrindo_normalizar(Nome_Participante)
+    ) %>%
+    filter(
+      !is.na(TOC_Abrindo_Nome),
+      TOC_Abrindo_Nome != ""
+    ) %>%
+    distinct(
+      TOC_Abrindo_Distrito,
+      TOC_Abrindo_Comunidade,
+      TOC_Abrindo_Nome,
+      .keep_all = TRUE
+    )
+  
+  # ============================================================
+  # 5. PREPARAR A BASE DE PRESENÇAS
+  # ============================================================
+  
+  TOC_Abrindo_presencas_long <- Presencas_Colectivas %>%
+    mutate(
+      TOC_Abrindo_Distrito = TOC_Abrindo_normalizar(Distrito),
+      TOC_Abrindo_Comunidade = TOC_Abrindo_normalizar(Comunidade),
+      TOC_Abrindo_Nome = TOC_Abrindo_normalizar(Nome_Participante)
+    ) %>%
+    pivot_longer(
+      cols = all_of(TOC_Abrindo_col_sessoes),
+      names_to = "TOC_Abrindo_Sessao",
+      values_to = "TOC_Abrindo_Status"
+    ) %>%
+    mutate(
+      TOC_Abrindo_Status = str_to_lower(
+        str_squish(as.character(TOC_Abrindo_Status))
+      )
+    ) %>%
+    filter(
+      TOC_Abrindo_Status %in% c("presente", "ausente")
+    ) %>%
+    group_by(
+      TOC_Abrindo_Distrito,
+      TOC_Abrindo_Comunidade,
+      TOC_Abrindo_Nome,
+      TOC_Abrindo_Sessao
+    ) %>%
+    summarise(
+      TOC_Abrindo_Status = if (
+        any(TOC_Abrindo_Status == "presente")
+      ) {
+        "presente"
+      } else {
+        "ausente"
+      },
+      .groups = "drop"
+    )
+  
+  # ============================================================
+  # 6. CALCULAR PRESENÇAS E AUSÊNCIAS POR PARTICIPANTE
+  # ============================================================
+  
+  TOC_Abrindo_resumo_presencas <- TOC_Abrindo_presencas_long %>%
+    group_by(
+      TOC_Abrindo_Distrito,
+      TOC_Abrindo_Comunidade,
+      TOC_Abrindo_Nome
+    ) %>%
+    summarise(
+      TOC_Abrindo_Num_Presencas = sum(
+        TOC_Abrindo_Status == "presente"
+      ),
+      
+      TOC_Abrindo_Num_Ausencias = sum(
+        TOC_Abrindo_Status == "ausente"
+      ),
+      
+      TOC_Abrindo_Num_Sessoes_Registadas = n(),
+      
+      .groups = "drop"
+    )
+  
+  # ============================================================
+  # 7. CRIAR A BASE ISOLADA PARA O TOC
+  # ============================================================
+  
+  TOC_Abrindo_base_indicadores <- TOC_Abrindo_selecionados %>%
+    left_join(
+      TOC_Abrindo_resumo_presencas,
+      by = c(
+        "TOC_Abrindo_Distrito",
+        "TOC_Abrindo_Comunidade",
+        "TOC_Abrindo_Nome"
+      )
+    ) %>%
+    mutate(
+      TOC_Abrindo_Num_Presencas = replace_na(
+        TOC_Abrindo_Num_Presencas, 0L
+      ),
+      
+      TOC_Abrindo_Num_Ausencias = replace_na(
+        TOC_Abrindo_Num_Ausencias, 0L
+      ),
+      
+      TOC_Abrindo_Num_Sessoes_Registadas = replace_na(
+        TOC_Abrindo_Num_Sessoes_Registadas, 0L
+      )
+    )
+  
+  # ============================================================
+  # 8. IDENTIFICAR A COLUNA DO SEXO
+  # ============================================================
+  
+  TOC_Abrindo_col_sexo <- intersect(
+    c("Sexo", "Sexo.x", "Gender", "Género", "Genero"),
+    names(TOC_Abrindo_base_indicadores)
+  )
+  
+  if (length(TOC_Abrindo_col_sexo) == 0) {
+    stop(
+      "TOC Abrindo: não foi encontrada a coluna do sexo ",
+      "na base de participantes seleccionados."
+    )
+  }
+  
+  TOC_Abrindo_col_sexo <- TOC_Abrindo_col_sexo[1]
+  
+  TOC_Abrindo_base_indicadores <- TOC_Abrindo_base_indicadores %>%
+    mutate(
+      TOC_Abrindo_Sexo_original = TOC_Abrindo_normalizar(
+        .data[[TOC_Abrindo_col_sexo]]
+      ),
+      
+      TOC_Abrindo_Sexo = case_when(
+        TOC_Abrindo_Sexo_original %in%
+          c("F", "FEMININO", "FEMALE") ~ "Feminino",
+        
+        TOC_Abrindo_Sexo_original %in%
+          c("M", "MASCULINO", "MALE") ~ "Masculino",
+        
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # ============================================================
+  # 9. CLASSIFICAR INÍCIO E CONCLUSÃO
+  # ============================================================
+  #
+  # INICIOU:
+  # Menos de 12 ausências e pelo menos uma presença registada.
+  #
+  # NÃO INICIOU:
+  # 12 ou mais ausências.
+  #
+  # TERMINOU:
+  # 8 ou mais presenças.
+  # ============================================================
+  
+  TOC_Abrindo_base_indicadores <- TOC_Abrindo_base_indicadores %>%
+    mutate(
+      TOC_Abrindo_Iniciou = case_when(
+        TOC_Abrindo_Num_Ausencias >= 12 ~ FALSE,
+        
+        TOC_Abrindo_Num_Presencas > 0 &
+          TOC_Abrindo_Num_Ausencias < 12 ~ TRUE,
+        
+        TRUE ~ FALSE
+      ),
+      
+      TOC_Abrindo_Terminou =
+        TOC_Abrindo_Num_Presencas >= 8
+    )
+  
+  # ============================================================
+  # 10. CALCULAR OS RESULTADOS DOS INDICADORES
+  # ============================================================
+  
+  # Indicador 1: total de participantes seleccionados
+  TOC_Abrindo_total_selecionados <- nrow(
+    TOC_Abrindo_selecionados
+  )
+  
+  # Indicador 2: participantes que iniciaram
+  TOC_Abrindo_total_iniciaram <- TOC_Abrindo_base_indicadores %>%
+    filter(TOC_Abrindo_Iniciou) %>%
+    nrow()
+  
+  # Indicador 3: participantes que terminaram
+  TOC_Abrindo_total_terminaram <- TOC_Abrindo_base_indicadores %>%
+    filter(TOC_Abrindo_Terminou) %>%
+    nrow()
+  
+  # Indicador 4: mulheres que iniciaram e terminaram
+  TOC_Abrindo_mulheres_iniciaram <- TOC_Abrindo_base_indicadores %>%
+    filter(
+      TOC_Abrindo_Sexo == "Feminino",
+      TOC_Abrindo_Iniciou
+    ) %>%
+    nrow()
+  
+  TOC_Abrindo_mulheres_terminaram <- TOC_Abrindo_base_indicadores %>%
+    filter(
+      TOC_Abrindo_Sexo == "Feminino",
+      TOC_Abrindo_Terminou
+    ) %>%
+    nrow()
+  
+  TOC_Abrindo_pct_mulheres <- if (
+    TOC_Abrindo_mulheres_iniciaram > 0
+  ) {
+    100 * TOC_Abrindo_mulheres_terminaram /
+      TOC_Abrindo_mulheres_iniciaram
+  } else {
+    NA_real_
+  }
+  
+  # Indicador 5: homens que iniciaram e terminaram
+  TOC_Abrindo_homens_iniciaram <- TOC_Abrindo_base_indicadores %>%
+    filter(
+      TOC_Abrindo_Sexo == "Masculino",
+      TOC_Abrindo_Iniciou
+    ) %>%
+    nrow()
+  
+  TOC_Abrindo_homens_terminaram <- TOC_Abrindo_base_indicadores %>%
+    filter(
+      TOC_Abrindo_Sexo == "Masculino",
+      TOC_Abrindo_Terminou
+    ) %>%
+    nrow()
+  
+  TOC_Abrindo_pct_homens <- if (
+    TOC_Abrindo_homens_iniciaram > 0
+  ) {
+    100 * TOC_Abrindo_homens_terminaram /
+      TOC_Abrindo_homens_iniciaram
+  } else {
+    NA_real_
+  }
+  
+  # ============================================================
+  # 11. TABELA FINAL DE RESULTADOS DO TOC
+  # ============================================================
+  
+  TOC_Abrindo_resultados <- tibble(
+    ID_Indicador = c(
+      "AO_TOC_01",
+      "AO_TOC_02",
+      "AO_TOC_03",
+      "AO_TOC_04",
+      "AO_TOC_05"
+    ),
+    
+    Resultado = c(
+      TOC_Abrindo_total_selecionados,
+      TOC_Abrindo_total_iniciaram,
+      TOC_Abrindo_total_terminaram,
+      TOC_Abrindo_pct_mulheres,
+      TOC_Abrindo_pct_homens
+    )
+  )
+  
+  TOC_Abrindo_TOC <- TOC_Abrindo_Metas %>%
+    left_join(
+      TOC_Abrindo_resultados,
+      by = "ID_Indicador"
+    ) %>%
+    mutate(
+      Alcance_Meta = if_else(
+        Meta > 0 & !is.na(Resultado),
+        Resultado / Meta * 100,
+        NA_real_
+      ),
+      
+      Estado = case_when(
+        is.na(Resultado) ~ "Sem dados",
+        Resultado >= Meta ~ "Meta alcançada",
+        TRUE ~ "Em progresso"
+      )
+    )
+  
+  # ============================================================
+  # 12. VERIFICAR OS RESULTADOS
+  # ============================================================
+  
+  print(TOC_Abrindo_TOC)
+  
+  # Verificar quantos não iniciaram
+  TOC_Abrindo_nao_iniciaram <- TOC_Abrindo_base_indicadores %>%
+    filter(TOC_Abrindo_Num_Ausencias >= 12)
+  
+  cat(
+    "\nParticipantes seleccionados:",
+    TOC_Abrindo_total_selecionados,
+    "\nParticipantes que iniciaram:",
+    TOC_Abrindo_total_iniciaram,
+    "\nParticipantes que não iniciaram:",
+    nrow(TOC_Abrindo_nao_iniciaram),
+    "\nParticipantes que terminaram:",
+    TOC_Abrindo_total_terminaram,
+    "\nMulheres que terminaram (%):",
+    round(TOC_Abrindo_pct_mulheres, 1),
+    "\nHomens que terminaram (%):",
+    round(TOC_Abrindo_pct_homens, 1),
+    "\n"
+  )
+  
+  
+  
+  # ==========================================================
+  # TOC ABRINDO OPORTUNIDADES
+  # TABELA INTERACTIVA + BOTÕES DE EXPORTAÇÃO
+  # ==========================================================
+  
+  output$toc_matriz_indicadores <- DT::renderDT({
+    
+    # ==========================================================
+    # 1. VERIFICAR A FONTE
+    # ==========================================================
+    
+    if (!exists("TOC_Abrindo_TOC", inherits = TRUE)) {
+      return(
+        DT::datatable(
+          data.frame(
+            Mensagem = paste(
+              "Não foi encontrada a fonte TOC_Abrindo_TOC.",
+              "Verifique se o cálculo dos indicadores foi executado."
+            )
+          ),
+          rownames = FALSE
+        )
+      )
+    }
+    
+    toc_abrindo <- get(
+      "TOC_Abrindo_TOC",
+      inherits = TRUE
+    )
+    
+    if (!is.data.frame(toc_abrindo) || nrow(toc_abrindo) == 0) {
+      return(
+        DT::datatable(
+          data.frame(
+            Mensagem = "A tabela TOC Abrindo não contém indicadores."
+          ),
+          rownames = FALSE
+        )
+      )
+    }
+    
+    # ==========================================================
+    # 2. FUNÇÃO AUXILIAR DE FORMATAÇÃO
+    # ==========================================================
+    
+    formatar_numero_toc <- function(x, casas = 1) {
+      
+      if (
+        length(x) == 0 ||
+        is.na(x) ||
+        !is.finite(x)
+      ) {
+        return("—")
+      }
+      
+      format(
+        round(x, casas),
+        big.mark = " ",
+        decimal.mark = ",",
+        nsmall = casas,
+        trim = TRUE
+      )
+    }
+    
+    formatar_valor_toc <- function(valor, unidade) {
+      
+      if (
+        length(valor) == 0 ||
+        is.na(valor) ||
+        !is.finite(valor)
+      ) {
+        return("—")
+      }
+      
+      if (identical(as.character(unidade), "%")) {
+        return(
+          paste0(formatar_numero_toc(valor, 1), "%")
+        )
+      }
+      
+      formatar_numero_toc(valor, 0)
+    }
+    
+    # ==========================================================
+    # 3. PREPARAR OS DADOS DA TABELA
+    # ==========================================================
+    
+    colunas_obrigatorias <- c(
+      "ID_Indicador",
+      "Indicador",
+      "Meta",
+      "Unidade",
+      "Resultado",
+      "Alcance_Meta",
+      "Estado"
+    )
+    
+    colunas_em_falta <- setdiff(
+      colunas_obrigatorias,
+      names(toc_abrindo)
+    )
+    
+    if (length(colunas_em_falta) > 0) {
+      return(
+        DT::datatable(
+          data.frame(
+            Mensagem = paste(
+              "Faltam colunas na tabela TOC:",
+              paste(colunas_em_falta, collapse = ", ")
+            )
+          ),
+          rownames = FALSE
+        )
+      )
+    }
+    
+    tabela_toc <- toc_abrindo
+    
+    tabela_toc$Meta_Exibicao <- mapply(
+      formatar_valor_toc,
+      tabela_toc$Meta,
+      tabela_toc$Unidade,
+      USE.NAMES = FALSE
+    )
+    
+    tabela_toc$Resultado_Exibicao <- mapply(
+      formatar_valor_toc,
+      tabela_toc$Resultado,
+      tabela_toc$Unidade,
+      USE.NAMES = FALSE
+    )
+    
+    tabela_toc$Alcance_Exibicao <- vapply(
+      tabela_toc$Alcance_Meta,
+      function(x) {
+        if (is.na(x) || !is.finite(x)) {
+          return("—")
+        }
+        
+        paste0(formatar_numero_toc(x, 1), "%")
+      },
+      character(1)
+    )
+    
+    # ==========================================================
+    # 4. MATRIZ FINAL
+    # ==========================================================
+    
+    tabela_final <- data.frame(
+      ID_Indicador = tabela_toc$ID_Indicador,
+      Indicador = tabela_toc$Indicador,
+      Meta = tabela_toc$Meta_Exibicao,
+      Resultado = tabela_toc$Resultado_Exibicao,
+      `Alcance da Meta` = tabela_toc$Alcance_Exibicao,
+      Estado = tabela_toc$Estado,
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    )
+    
+    # ==========================================================
+    # 5. DATATABLE INTERACTIVA
+    # ==========================================================
+    
+    tabela_widget <- DT::datatable(
+      
+      tabela_final,
+      
+      rownames = FALSE,
+      escape = TRUE,
+      
+      extensions = c("Buttons", "FixedHeader"),
+      
+      options = list(
+        
+        pageLength = 5,
+        
+        lengthMenu = list(
+          c(5, 10, 15, -1),
+          c("5", "10", "15", "Todos")
+        ),
+        
+        scrollX = TRUE,
+        scrollY = "65vh",
+        scrollCollapse = TRUE,
+        autoWidth = FALSE,
+        fixedHeader = TRUE,
+        
+        dom = "Blfrtip",
+        
+        buttons = list(
+          list(
+            extend = "copy",
+            text = "Copiar"
+          ),
+          list(
+            extend = "csv",
+            text = "Exportar CSV"
+          ),
+          list(
+            extend = "excel",
+            text = "Exportar Excel"
+          )
+        ),
+        
+        columnDefs = list(
+          
+          list(
+            targets = 0,
+            width = "125px",
+            className = "dt-center"
+          ),
+          
+          list(
+            targets = 1,
+            width = "430px",
+            className = "dt-left"
+          ),
+          
+          list(
+            targets = c(2, 3, 4, 5),
+            width = "145px",
+            className = "dt-center"
+          )
+        ),
+        
+        language = list(
+          search = "Pesquisar:",
+          lengthMenu = "Mostrar _MENU_ indicadores",
+          info = "A mostrar _START_ a _END_ de _TOTAL_ indicadores",
+          infoEmpty = "Sem indicadores disponíveis",
+          infoFiltered = "(filtrado de _MAX_ indicadores)",
+          zeroRecords = "Nenhum indicador encontrado",
+          emptyTable = "Sem dados disponíveis",
+          
+          paginate = list(
+            first = "Primeiro",
+            last = "Último",
+            `next` = "Seguinte",
+            previous = "Anterior"
+          ),
+          
+          buttons = list(
+            copy = "Copiar",
+            csv = "Exportar CSV",
+            excel = "Exportar Excel"
+          )
+        )
+      ),
+      
+      class = "display compact stripe hover"
+    )
+    
+    # ==========================================================
+    # 6. CORES DO ESTADO
+    # ==========================================================
+    
+    tabela_widget <- tabela_widget %>%
+      DT::formatStyle(
+        "Estado",
+        target = "cell",
+        
+        backgroundColor = DT::styleEqual(
+          c(
+            "Meta alcançada",
+            "Em progresso",
+            "Abaixo da meta",
+            "Sem dados",
+            "Sem meta"
+          ),
+          
+          c(
+            "#d4edda",
+            "#fff3cd",
+            "#fff3cd",
+            "#f5f3f4",
+            "#eeeeee"
+          )
+        ),
+        
+        color = DT::styleEqual(
+          c(
+            "Meta alcançada",
+            "Em progresso",
+            "Abaixo da meta",
+            "Sem dados",
+            "Sem meta"
+          ),
+          
+          c(
+            "#155724",
+            "#856404",
+            "#856404",
+            "#666666",
+            "#666666"
+          )
+        ),
+        
+        fontWeight = "bold"
+      )
+    
+    # ==========================================================
+    # 7. FORMATAÇÃO DAS CÉLULAS
+    # ==========================================================
+    
+    tabela_widget <- tabela_widget %>%
+      DT::formatStyle(
+        columns = names(tabela_final),
+        padding = "7px",
+        `white-space` = "normal",
+        `vertical-align` = "middle"
+      )
+    
+    # ==========================================================
+    # 8. BOTÕES PERSONALIZADOS — PNG E ECRÃ INTEIRO
+    # ==========================================================
+    
+    tabela_widget <- htmlwidgets::onRender(
+      tabela_widget,
+      
+      htmlwidgets::JS("
+      function(el, x) {
+
+        var container = el.parentElement;
+
+        if (!container ||
+            container.querySelector('.toc-abrindo-toolbar')) {
+          return;
+        }
+
+        // --------------------------------------------------
+        // BARRA DE BOTÕES
+        // --------------------------------------------------
+
+        var toolbar = document.createElement('div');
+        toolbar.className = 'toc-abrindo-toolbar';
+
+        toolbar.style.cssText =
+          'display:flex;gap:10px;flex-wrap:wrap;' +
+          'margin-bottom:12px;';
+
+        function criarBotao(texto, cor) {
+
+          var btn = document.createElement('button');
+
+          btn.type = 'button';
+          btn.textContent = texto;
+
+          btn.style.cssText =
+            'background:' + cor + ';color:white;' +
+            'border:0;padding:9px 14px;' +
+            'border-radius:5px;cursor:pointer;' +
+            'font-weight:bold;';
+
+          return btn;
+        }
+
+        var pngButton = criarBotao(
+          '📷 Guardar tabela completa em PNG',
+          '#9442d4'
+        );
+
+        var fullButton = criarBotao(
+          '⛶ Ecrã inteiro',
+          '#F37238'
+        );
+
+        toolbar.appendChild(pngButton);
+        toolbar.appendChild(fullButton);
+
+        container.insertBefore(toolbar, el);
+
+        // --------------------------------------------------
+        // ECRÃ INTEIRO
+        // --------------------------------------------------
+
+        fullButton.addEventListener('click', function() {
+
+          if (!document.fullscreenElement) {
+
+            if (container.requestFullscreen) {
+              container.requestFullscreen();
+            }
+
+          } else if (document.exitFullscreen) {
+
+            document.exitFullscreen();
+
+          }
+        });
+
+        // --------------------------------------------------
+        // EXPORTAR TODAS AS LINHAS EM PNG
+        // --------------------------------------------------
+
+        pngButton.addEventListener('click', async function() {
+
+          var $ = window.jQuery;
+
+          if (typeof window.html2canvas !== 'function') {
+            alert(
+              'A biblioteca html2canvas não está carregada. ' +
+              'Verifique o script no UI.'
+            );
+            return;
+          }
+
+          var table = el.querySelector(
+            '.dataTables_scrollBody table.dataTable'
+          );
+
+          if (!table) {
+            table = el.querySelector('table.dataTable');
+          }
+
+          if (!table || !$ || !$.fn.DataTable ||
+              !$.fn.DataTable.isDataTable(table)) {
+
+            alert('Não foi possível localizar a tabela.');
+            return;
+          }
+
+          var dt = $(table).DataTable();
+
+          var oldLength = dt.page.len();
+          var oldPage = dt.page();
+
+          var wrapper = el.querySelector(
+            '.dataTables_wrapper'
+          ) || el;
+
+          var scrollBody = wrapper.querySelector(
+            '.dataTables_scrollBody'
+          );
+
+          var oldHeight = scrollBody
+            ? scrollBody.style.height : '';
+
+          var oldMaxHeight = scrollBody
+            ? scrollBody.style.maxHeight : '';
+
+          var oldOverflow = scrollBody
+            ? scrollBody.style.overflow : '';
+
+          pngButton.disabled = true;
+          pngButton.textContent = 'A preparar PNG...';
+
+          try {
+
+            // Mostrar todos os indicadores.
+            dt.page.len(-1).draw();
+
+            await new Promise(function(resolve) {
+              setTimeout(resolve, 400);
+            });
+
+            // Expandir a área de visualização.
+            if (scrollBody) {
+              scrollBody.style.height = 'auto';
+              scrollBody.style.maxHeight = 'none';
+              scrollBody.style.overflow = 'visible';
+            }
+
+            await new Promise(function(resolve) {
+              setTimeout(resolve, 200);
+            });
+
+            var canvas = await window.html2canvas(wrapper, {
+
+              scale: 2,
+              backgroundColor: '#ffffff',
+              useCORS: true,
+              logging: false,
+
+              onclone: function(doc) {
+
+                var clonedToolbar = doc.querySelector(
+                  '.toc-abrindo-toolbar'
+                );
+
+                if (clonedToolbar) {
+                  clonedToolbar.style.display = 'none';
+                }
+
+                doc.querySelectorAll(
+                  '.dataTables_scrollBody, .dataTables_scroll'
+                ).forEach(function(node) {
+
+                  node.style.height = 'auto';
+                  node.style.maxHeight = 'none';
+                  node.style.overflow = 'visible';
+                });
+              }
+            });
+
+            var blob = await new Promise(function(resolve) {
+              canvas.toBlob(resolve, 'image/png');
+            });
+
+            if (!blob) {
+              throw new Error('Não foi possível criar o PNG.');
+            }
+
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+
+            link.href = url;
+            link.download = 'TOC_Abrindo_Oportunidades.png';
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(function() {
+              URL.revokeObjectURL(url);
+            }, 3000);
+
+          } catch (error) {
+
+            console.error(
+              'Erro ao exportar TOC Abrindo:',
+              error
+            );
+
+            alert(
+              'Não foi possível gerar o PNG. ' +
+              'Consulte a consola do navegador.'
+            );
+
+          } finally {
+
+            if (scrollBody) {
+              scrollBody.style.height = oldHeight;
+              scrollBody.style.maxHeight = oldMaxHeight;
+              scrollBody.style.overflow = oldOverflow;
+            }
+
+            dt.page.len(oldLength).draw();
+
+            setTimeout(function() {
+
+              dt.page(oldPage).draw('page');
+
+              pngButton.disabled = false;
+              pngButton.textContent =
+                '📷 Guardar tabela completa em PNG';
+
+            }, 250);
+          }
+        });
+      }
+    ")
+    )
+    
+    tabela_widget
+    
+  }, server = TRUE)
+  
   #################### BOTAO ############################
   
   # ==============================
@@ -4042,15 +5063,15 @@ server <- function(input, output, session) {
         refresh_token
       )$access_token
       
-      # Presencas_Colectivas <- RZohoCreator::get_records(
+      # Presencas_Mentoria <- RZohoCreator::get_records(
       #   "associacaomuva",
       #   "monitoria-edm",
       #   "lista_presencaKM",
       #   access_token
       # )
       # 
-      # writexl::write_xlsx(Presencas_Colectivas, "Presencas_Colectivas.xlsx")
-      
+      # writexl::write_xlsx(Presencas_Mentoria, "Presencas_Mentoria.xlsx")
+
       
       Presencas_BPA <- RZohoCreator::get_records(
         "associacaomuva",

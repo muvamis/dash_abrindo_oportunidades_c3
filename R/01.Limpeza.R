@@ -68,6 +68,16 @@ Perfil_Abrindo_C2 <- Perfil_Abrindo_C2 %>%
 
 Presencas_Colectivas <- read_excel("Presenças_PI_2026.xlsx")
 
+
+col_sessoes <- grep("^Sessao", names(Presencas_Colectivas), value = TRUE)
+
+
+Presencas_Colectivas <- Presencas_Colectivas %>%
+  mutate(
+    Num_Ausencias = rowSums(across(all_of(col_sessoes), ~ . == "Ausente"), na.rm = TRUE)
+  )
+
+
 # Presencas_Colectivas <- Presencas_Colectivas %>%
 #   select(-c(
 #     6,
@@ -223,7 +233,7 @@ Perfil_Abrindo_C2_2026 <- Perfil_Abrindo_C2_2026 %>% rename(
   Sexo =Sexo.x
 )
 
-table(Perfil_Abrindo_C2_2026$Distrito,Perfil_Abrindo_C2_2026$Sexo)
+
 
 
 # duplicados_Nome <- Presencas_Monapo_Perfil[duplicated(Presencas_Monapo_Perfil$Nome_Participante), ]
@@ -252,6 +262,21 @@ table(Perfil_Abrindo_C2_2026$Distrito,Perfil_Abrindo_C2_2026$Sexo)
 
 Presencas_PI <- Presencas_Colectivas
 
+# Presencas_Perfil_Mentoria <- Presencas_PI %>%
+# inner_join(Perfil_Abrindo_C2, by = "Nome_Participante")
+# 
+# Presencas_Perfil_Mentoria <- Presencas_PI %>%
+#   inner_join(
+#     Perfil_Abrindo_C2,
+#     by = "Nome_Participante"
+#   ) %>%
+#   filter(
+#     Num_Ausencias <= 4,
+#     Act_negocio == "Sim"
+#   )
+#  write_xlsx(Presencas_Perfil_Mentoria, "Presencas_Perfil_Mentoria.xlsx")
+# # Perfil_Ribaue <- participantes_Geral %>%
+#   filter(Distrito == "Ribaue")
 
 # merge_final <- Presencas_PI %>%
 #   inner_join(Perfil_Abrindo_C2, by = "Nome_Participante")
