@@ -362,6 +362,8 @@ Beneficiarios_Envolvidos = `Depois do seu envolvimento com o projecto Abrindo Op
   
 )
 
+
+
 # 
 # 
 Beneficiarios_Indirectos <- Beneficiarios_Indirectos %>%
@@ -372,7 +374,14 @@ Beneficiarios_Indirectos <- Beneficiarios_Indirectos %>%
       TRUE ~ format(Data_Registo, "%Y-%m")  # resto das datas -> mês atual
     )
   )
-# 
+
+
+#
+Beneficiarios_Indirectos <- Beneficiarios_Indirectos %>%
+  select(-c(14, 15))
+
+# #
+
 # duplicados <- Beneficiario_Indirectos[duplicated(Beneficiario_Indirectos), ]
 # # 
 # duplicados <- Beneficiario_Indirectos[duplicated(Beneficiario_Indirectos$Nome_Beneficiario_Indirecto), ]

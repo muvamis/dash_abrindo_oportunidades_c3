@@ -1,11 +1,12 @@
 
 /* ==========================================================================
-   ABRINDO OPORTUNIDADES CIII — Português / English
+   ABRINDO OPORTUNIDADES CIII — Português / English / Français
    --------------------------------------------------------------------------
-   - Botão de alternância PT | EN
-   - Guarda a preferência de idioma no navegador
-   - Traduz textos existentes através de traducoes.json
-   - Observa conteúdos dinâmicos gerados pelo Shiny
+   - Alternância PT | EN | FR
+   - Guarda o idioma no navegador
+   - Dicionário com três idiomas
+   - Compatível com entradas antigas PT/EN
+   - Traduz conteúdos dinâmicos do Shiny
    - Não altera dados, cálculos ou valores dos gráficos
    ========================================================================== */
 
@@ -16,19 +17,25 @@
   var DICT_URL = 'i18n/traducoes.json';
   var SHINY_INPUT = 'idioma_app';
 
-  // Elementos que nunca devem ser traduzidos
+  var LANGS = ['pt', 'en', 'fr'];
+
+  var LANG_INDEX = {
+    pt: 0,
+    en: 1,
+    fr: 2
+  };
+
   var SKIP_SELECTOR =
     'blockquote, .i18n-skip, script, style, noscript, textarea';
 
-  // Nas células das tabelas, traduzir apenas textos exactos conhecidos
   var EXACT_ONLY_SELECTOR = 'td';
-
   var ATTRS = ['title', 'placeholder'];
   var HAS_LETTER = /[A-Za-zÀ-ɏ]/;
 
   var state = {
     lang: 'pt',
     loaded: false,
+    data: null,
     exact: new Map(),
     fragRe: null,
     nodeRules: [],
@@ -52,19 +59,64 @@
   }
 
   // ------------------------------------------------------------------------
-  // Construção do dicionário
+  // Obter a tradução correspondente ao idioma seleccionado
+  // ------------------------------------------------------------------------
+
+  function getTranslation(entry) {
+    if (entry === undefined || entry === null) {
+      return undefined;
+    }
+
+    // Formato recomendado: { en: "...", fr: "..." }
+    if (typeof entry === 'object' && !Array.isArray(entry)) {
+      return entry[state.lang];
+    }
+
+    // Compatibilidade com regras antigas: para: "English"
+    if (state.lang === 'en' && typeof entry === 'string') {
+      return entry;
+    }
+
+    return undefined;
+  }
+
+  // ------------------------------------------------------------------------
+  // Construção do dicionário para o idioma seleccionado
   // ------------------------------------------------------------------------
 
   function build(data) {
+    state.data = data;
+    buildLanguage();
+    state.loaded = true;
+  }
+
+  function buildLanguage() {
+    var data = state.data;
+
+    if (!data) return;
+
     state.exact.clear();
 
-    (data.entradas || []).forEach(function (par) {
-      var a = splitSegments(par[0]);
-      var b = splitSegments(par[1]);
+    var idx = LANG_INDEX[state.lang];
+
+    (data.entradas || []).forEach(function (entry) {
+      if (!Array.isArray(entry) || entry.length < 2) return;
+
+      var original = entry[0];
+      var target = entry[idx];
+
+      // Em francês, entradas antigas com apenas PT/EN
+      // permanecem no original até receberem tradução francesa.
+      if (target === undefined || target === null || target === '') {
+        return;
+      }
+
+      var a = splitSegments(original);
+      var b = splitSegments(target);
 
       if (a.length !== b.length) {
-        a = [String(par[0]).replace(/<[^>]+>/g, ' ')];
-        b = [String(par[1]).replace(/<[^>]+>/g, ' ')];
+        a = [String(original).replace(/<[^>]+>/g, ' ')];
+        b = [String(target).replace(/<[^>]+>/g, ' ')];
       }
 
       for (var i = 0; i < a.length; i++) {
@@ -119,17 +171,43 @@
       state.fragRe = new RegExp(parts.join('|'), 'gu');
     }
 
-    state.nodeRules = (data.regras_texto_completo || []).map(
-      function (r) {
-        return [new RegExp(r.de, 'u'), r.para];
-      }
-    );
+    // Regras de texto completo
+    state.nodeRules = [];
 
+    (data.regras_texto_completo || []).forEach(function (r) {
+      var target = getTranslation(r.para);
+
+      // Compatibilidade com a propriedade antiga "fr"
+      if (target === undefined && state.lang === 'fr') {
+        target = r.fr;
+      }
+
+      if (target === undefined || target === null || target === '') {
+        return;
+      }
+
+      state.nodeRules.push([
+        new RegExp(r.de, 'u'),
+        target
+      ]);
+    });
+
+    // Regras parciais
     state.preRules = [];
     state.fragRules = [];
 
     (data.regras_parciais || []).forEach(function (r) {
-      var rule = [new RegExp(r.de, 'gu'), r.para];
+      var target = getTranslation(r.para);
+
+      if (target === undefined && state.lang === 'fr') {
+        target = r.fr;
+      }
+
+      if (target === undefined || target === null || target === '') {
+        return;
+      }
+
+      var rule = [new RegExp(r.de, 'gu'), target];
 
       if (r.fase === 'antes') {
         state.preRules.push(rule);
@@ -137,8 +215,6 @@
         state.fragRules.push(rule);
       }
     });
-
-    state.loaded = true;
   }
 
   // ------------------------------------------------------------------------
@@ -245,7 +321,7 @@
   }
 
   // ------------------------------------------------------------------------
-  // Atributos HTML: title e placeholder
+  // Atributos HTML
   // ------------------------------------------------------------------------
 
   function translateAttrs(el) {
@@ -334,11 +410,11 @@
   }
 
   // ------------------------------------------------------------------------
-  // Detectar conteúdos novos gerados pelo Shiny
+  // Observar conteúdos dinâmicos gerados pelo Shiny
   // ------------------------------------------------------------------------
 
   var observer = new MutationObserver(function (muts) {
-    if (state.lang !== 'en' || !state.loaded) return;
+    if (state.lang === 'pt' || !state.loaded) return;
 
     muts.forEach(function (m) {
       if (m.type === 'childList') {
@@ -366,7 +442,7 @@
   }
 
   // ------------------------------------------------------------------------
-  // Estilo do botão PT | EN
+  // Estilo do botão PT | EN | FR
   // ------------------------------------------------------------------------
 
   function injectStyle() {
@@ -398,7 +474,7 @@
   }
 
   // ------------------------------------------------------------------------
-  // Criar o botão PT | EN
+  // Criar o botão PT | EN | FR
   // ------------------------------------------------------------------------
 
   function injectToggle() {
@@ -410,17 +486,19 @@
     box.id = 'abrindo-i18n-toggle';
     box.className = 'i18n-skip';
     box.setAttribute('role', 'group');
-    box.setAttribute('aria-label', 'Idioma / Language');
+    box.setAttribute('aria-label', 'Idioma / Language / Langue');
 
     [
       ['pt', 'PT', 'Português'],
-      ['en', 'EN', 'English']
+      ['en', 'EN', 'English'],
+      ['fr', 'FR', 'Français']
     ].forEach(function (o) {
       var b = document.createElement('button');
 
       b.type = 'button';
       b.setAttribute('data-lang', o[0]);
       b.setAttribute('title', o[2]);
+      b.setAttribute('aria-label', o[2]);
       b.textContent = o[1];
 
       b.addEventListener('click', function () {
@@ -451,7 +529,7 @@
   }
 
   // ------------------------------------------------------------------------
-  // Comunicar o idioma ao Shiny, se estiver disponível
+  // Comunicar o idioma ao Shiny
   // ------------------------------------------------------------------------
 
   function notifyShiny() {
@@ -472,24 +550,32 @@
   // ------------------------------------------------------------------------
 
   function setLang(lang) {
-    lang = lang === 'en' ? 'en' : 'pt';
+    lang = LANGS.indexOf(lang) !== -1 ? lang : 'pt';
 
     var changed = lang !== state.lang;
+
+    // Restaurar os textos originais antes de mudar de idioma.
+    if (state.loaded && changed && state.lang !== 'pt') {
+      restoreTree(document.body);
+    }
+
     state.lang = lang;
 
     try {
       window.localStorage.setItem(LS_KEY, lang);
     } catch (e) {
-      // A aplicação continua a funcionar sem localStorage
+      // A aplicação funciona mesmo sem localStorage.
+    }
+
+    if (state.loaded) {
+      buildLanguage();
     }
 
     paintToggle();
 
-    if (lang === 'en') {
-      if (state.loaded) {
-        translateTree(document.body);
-      }
-    } else {
+    if (lang !== 'pt' && state.loaded) {
+      translateTree(document.body);
+    } else if (lang === 'pt') {
       restoreTree(document.body);
     }
 
@@ -512,7 +598,11 @@
     try {
       saved = window.localStorage.getItem(LS_KEY) || 'pt';
     } catch (e) {
-      // Utilizar Português como idioma padrão
+      // Português como idioma padrão.
+    }
+
+    if (LANGS.indexOf(saved) === -1) {
+      saved = 'pt';
     }
 
     fetch(DICT_URL, { cache: 'no-cache' })
@@ -524,13 +614,10 @@
         return r.json();
       })
       .then(function (data) {
+        state.data = data;
+        state.lang = 'pt';
         build(data);
-
-        if (saved === 'en') {
-          setLang('en');
-        } else {
-          setLang('pt');
-        }
+        setLang(saved);
       })
       .catch(function (err) {
         if (window.console) {
@@ -549,7 +636,7 @@
     init();
   }
 
-  // API opcional para utilização a partir de outros scripts
+  // API opcional para outros scripts
   window.AbrindoI18n = {
     setLang: setLang,
     getLang: function () {
