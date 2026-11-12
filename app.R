@@ -5158,54 +5158,54 @@ server <- function(input, output, session) {
       # 
       # writexl::write_xlsx(Presencas_Mentoria, "Presencas_Mentoria.xlsx")
 
+      # 
+      # Presencas_BPA <- RZohoCreator::get_records(
+      #   "associacaomuva",
+      #   "monitoria-edm",
+      #   "BPA_CICLO_3_Report",
+      #   access_token
+      # )
+      # 
+      # writexl::write_xlsx(Presencas_BPA, "Presencas_BPA.xlsx")
+      # 
+      # 
+      # Grupos_Poupanca <- RZohoCreator::get_records(
+      #   "associacaomuva",
+      #   "monitoria-edm",
+      #   "REGISTRO_DE_GRUPO_Report",
+      #   access_token
+      # )
+      # 
+      # writexl::write_xlsx(Grupos_Poupanca, "Grupos_Poupanca.xlsx")
+      # 
+      # 
+      # Geral_Poupanca <- RZohoCreator::get_records(
+      #   "associacaomuva",
+      #   "monitoria-edm",
+      #   "POUPAN_A_Report",
+      #   access_token
+      # )
+      # 
+      # writexl::write_xlsx(Geral_Poupanca, "Geral_Poupanca.xlsx")
+      # 
+      # 
+      # Qualidade_Sessoes <- RZohoCreator::get_records(
+      #   "associacaomuva",
+      #   "monitoria-edm",
+      #   "Qualidade_Sessoes_Abrindo_Report",
+      #   access_token
+      # )
+      # 
+      # writexl::write_xlsx(Qualidade_Sessoes, "Qualidade_Sessoes.xlsx")
       
-      Presencas_BPA <- RZohoCreator::get_records(
-        "associacaomuva",
-        "monitoria-edm",
-        "BPA_CICLO_3_Report",
-        access_token
-      )
-      
-      writexl::write_xlsx(Presencas_BPA, "Presencas_BPA.xlsx")
-      
-      
-      Grupos_Poupanca <- RZohoCreator::get_records(
-        "associacaomuva",
-        "monitoria-edm",
-        "REGISTRO_DE_GRUPO_Report",
-        access_token
-      )
-      
-      writexl::write_xlsx(Grupos_Poupanca, "Grupos_Poupanca.xlsx")
-      
-      
-      Geral_Poupanca <- RZohoCreator::get_records(
-        "associacaomuva",
-        "monitoria-edm",
-        "POUPAN_A_Report",
-        access_token
-      )
-      
-      writexl::write_xlsx(Geral_Poupanca, "Geral_Poupanca.xlsx")
-      
-      
-      Qualidade_Sessoes <- RZohoCreator::get_records(
-        "associacaomuva",
-        "monitoria-edm",
-        "Qualidade_Sessoes_Abrindo_Report",
-        access_token
-      )
-      
-      writexl::write_xlsx(Qualidade_Sessoes, "Qualidade_Sessoes.xlsx")
-      
-      Beneficiarios_Indiretos <- RZohoCreator::get_records(
-        "associacaomuva",
-        "monitoria-edm",
-        "Beneficiario_Indirectos_Report",
-        access_token
-      )
-      
-      writexl::write_xlsx(Beneficiarios_Indiretos, "Beneficiarios_Indiretos.xlsx")
+      # Beneficiarios_Indiretos <- RZohoCreator::get_records(
+      #   "associacaomuva",
+      #   "monitoria-edm",
+      #   "Beneficiario_Indirectos_Report",
+      #   access_token
+      # )
+      # 
+      # writexl::write_xlsx(Beneficiarios_Indiretos, "Beneficiarios_Indiretos.xlsx")
       
       TRUE
       

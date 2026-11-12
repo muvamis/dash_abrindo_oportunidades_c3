@@ -9,10 +9,10 @@ packages <- c(
   
 )
 
-# Verifique quais pacotes não estão instalados
+
 install_packages <- packages[!sapply(packages, requireNamespace, quietly = TRUE)]
 
-# Instale os pacotes que estão faltando
+
 if (length(install_packages) > 0) {
   install.packages(install_packages)
 }
@@ -24,11 +24,11 @@ library(tidygeocoder)
 library(dplyr)
 library(openxlsx)
 library(leaflet)
-library(shinycssloaders)  # para o withSpinner
+library(shinycssloaders)  
 library(openxlsx)
 library(lubridate)
 
- # devtools::install_github('muvamis/RZohoCreator')
+# devtools::install_github('muvamis/RZohoCreator')
 
 ############### PRESENCAS COLECTIVAS
 # carrega as variaveis do ficheiro .env
@@ -633,3 +633,76 @@ Presencas_BPA <- Presencas_BPA %>%
 
 Ficha_Monitoria_Feiras <- read_excel("Ficha_Monitoria_Feiras.xlsx")
 
+# 
+# ################# CERTIFICADOS
+# 
+# Presencas_PI <- Presencas_Colectivas %>%
+#   mutate(
+#     Total_Faltas_PI = rowSums(
+#       across(
+#         all_of(paste0("Sessao", 1:12)),
+#         ~ trimws(as.character(.x)) == "Ausente"
+#       ),
+#       na.rm = TRUE
+#     ),
+#     
+#     Total_Registos_PI = rowSums(
+#       across(
+#         all_of(paste0("Sessao", 1:12)),
+#         ~ !is.na(.x) & trimws(as.character(.x)) != ""
+#       ),
+#       na.rm = TRUE
+#     ),
+#     
+#     Certificado = case_when(
+#       Total_Registos_PI == 0 ~ "Não elegível",
+#       Total_Faltas_PI <= 4 ~ "Elegível",
+#       TRUE ~ "Não elegível"
+#     )
+#   )
+# 
+# 
+# # Identificar as sessões de BPA
+# sessoes_BPA <- grep(
+#   "^Sessão ",
+#   names(Presencas_BPA),
+#   value = TRUE
+# )
+# 
+# # Confirmar as 11 sessões
+# stopifnot(length(sessoes_BPA) == 11)
+# 
+# Presencas_BPA <- Presencas_BPA %>%
+#   mutate(
+#     Total_Faltas_BPA = rowSums(
+#       across(
+#         all_of(sessoes_BPA),
+#         ~ trimws(as.character(.x)) == "Ausente"
+#       ),
+#       na.rm = TRUE
+#     ),
+#     Total_Registos_BPA = rowSums(
+#       across(
+#         all_of(sessoes_BPA),
+#         ~ !is.na(.x) & trimws(as.character(.x)) != ""
+#       ),
+#       na.rm = TRUE
+#     ),
+#     Certificado = case_when(
+#       Total_Registos_BPA == 0 ~ "Não elegível",
+#       Total_Faltas_BPA <= 6 ~ "Elegível",
+#       TRUE ~ "Não elegível"
+#     )
+#   )
+# 
+# # Preparar as folhas do Excel
+# Lista_Graduacao_C3 <- list(
+#   PI = Presencas_PI,
+#   BPA = Presencas_BPA
+# )
+# 
+# # Exportar
+# write_xlsx(
+#   Lista_Graduacao_C3,
+#   path = "Graduacao_Abrindo_Oportunidades_C3.xlsx"
+# )
